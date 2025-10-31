@@ -1,0 +1,13 @@
+{
+  "name": "rrb",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
