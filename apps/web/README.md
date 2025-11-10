@@ -1,1 +1,3 @@
-# React + TypeScript + Vite
+# ⛰️ Front
+
+React + Vite
