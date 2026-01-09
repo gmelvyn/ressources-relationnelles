@@ -28,9 +28,9 @@ jobs:
         id: filter
         with:
           filters: |
-            app1:
+            api:
               - 'apps/api/**'
-            app2:
+            front:
               - 'apps/front/**'
 
   build-and-push:
