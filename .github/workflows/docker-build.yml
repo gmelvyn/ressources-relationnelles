@@ -73,7 +73,7 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
-      - name: Deploy on Server
+      - name: Deploy on server
         if: github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -85,7 +85,7 @@ jobs:
             cd ${{ secrets.DEPLOY_PATH }}
 
             APP=${{ matrix.app }}
-            TAG=main-${{ github.sha }}
+            TAG=main-${SHORT_SHA}
 
             echo "Login to GHCR"
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -103,5 +103,4 @@ jobs:
             docker compose pull $APP
             docker compose up -d $APP
 
-            echo "Cleanup"
             docker image prune -f
