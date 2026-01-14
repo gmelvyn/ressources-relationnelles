@@ -1,0 +1,16 @@
+services:
+  api:
+    image: ghcr.io/gmelvyn/rrb/api:${API_TAG}
+    container_name: api
+    restart: unless-stopped
+    ports:
+      - "4500:3000"
+    env_file:
+      - .env
+
+  front:
+    image: ghcr.io/gmelvyn/rrb/front:${FRONT_TAG}
+    container_name: front
+    restart: unless-stopped
+    ports:
+      - "4600:3000"
