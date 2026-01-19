@@ -3,12 +3,16 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY apps/api/package*.json ./apps/api/
+COPY apps/api/prisma ./apps/api/prisma
 
 RUN --mount=type=cache,target=/root/.npm \
   npm install --workspace=apps/api
 
 COPY apps/api ./apps/api
 WORKDIR /app/apps/api
+
+RUN npx prisma generate
+
 RUN npm run build
 
 FROM node:24-alpine
@@ -22,6 +26,9 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+
 WORKDIR /app/apps/api
 EXPOSE 3000
+
 CMD ["node", "dist/main.js"]
