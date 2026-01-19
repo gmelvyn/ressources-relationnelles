@@ -14,9 +14,25 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SearchModule } from './search/search.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { SettingsModule } from './settings/settings.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [AuthModule, CategoriesModule, RelationTypesModule, ResourcesModule, CommentsModule, FavoritesModule, ProgressModule, ActivitiesModule, StatisticsModule, NotificationsModule, SearchModule, UploadsModule, SettingsModule],
+  imports: [
+    AuthModule,
+    CategoriesModule,
+    RelationTypesModule,
+    ResourcesModule,
+    CommentsModule,
+    FavoritesModule,
+    ProgressModule,
+    ActivitiesModule,
+    StatisticsModule,
+    NotificationsModule,
+    SearchModule,
+    UploadsModule,
+    SettingsModule,
+    PrismaModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
