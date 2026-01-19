@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { RelationTypesService } from './relation-types.service';
 import { CreateRelationTypeDto } from './dto/create-relation-type.dto';
 import { UpdateRelationTypeDto } from './dto/update-relation-type.dto';
@@ -23,7 +31,10 @@ export class RelationTypesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRelationTypeDto: UpdateRelationTypeDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateRelationTypeDto: UpdateRelationTypeDto,
+  ) {
     return this.relationTypesService.update(+id, updateRelationTypeDto);
   }
 
