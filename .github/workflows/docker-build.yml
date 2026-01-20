@@ -12,7 +12,7 @@ env:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       apps: ${{ steps.filter.outputs.changes }}
     steps:
@@ -31,7 +31,7 @@ jobs:
   build-push-deploy:
     needs: detect-changes
     if: needs.detect-changes.outputs.apps != '[]'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         app: ${{ fromJSON(needs.detect-changes.outputs.apps) }}
