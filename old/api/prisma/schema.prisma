@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "./generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  username String  @unique
+  name     String
+  forename String
+  verified Boolean @default(false)
+  active   Boolean @default(true)
+  role     Role    @default(CITIZEN)
+
+  resources  Resource[]
+  comments   Comment[]
+  progress   UserResourceProgress[]
+  statEvents StatEvent[]
+
+  createdAt            DateTime              @default(now())
+  createdSessions      ActivitySession[]     @relation("CreatedSessions")
+  activityParticipants ActivityParticipant[] @relation("ActivityParticipants")
+  activityMessages     ActivityMessage[]     @relation("ActivityMessages")
+}
+
+enum Role {
+  CITIZEN
+  MODERATOR
+  ADMIN
+  SUPERADMIN
+}
+
+model Resource {
+  id         Int            @id @default(autoincrement())
+  title      String
+  content    String
+  visibility Visibility
+  status     ResourceStatus @default(PENDING)
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  relationTypeId Int
+  relationType   RelationType @relation(fields: [relationTypeId], references: [id])
+
+  resourceTypeId Int
+  resourceType   ResourceType @relation(fields: [resourceTypeId], references: [id])
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  comments Comment[]
+  progress UserResourceProgress[]
+  stats    StatEvent[]
+
+  createdAt        DateTime          @default(now())
+  activitySessions ActivitySession[]
+}
+
+enum Visibility {
+  PRIVATE
+  SHARED
+  PUBLIC
+}
+
+enum ResourceStatus {
+  PENDING
+  PUBLISHED
+  SUSPENDED
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  resources Resource[]
+}
+
+model RelationType {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  resources Resource[]
+}
+
+model ResourceType {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  resources Resource[]
+}
+
+model Comment {
+  id        Int     @id @default(autoincrement())
+  content   String
+  moderated Boolean @default(false)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  resourceId Int
+  resource   Resource @relation(fields: [resourceId], references: [id])
+
+  parentId Int?
+  parent   Comment?  @relation("Thread", fields: [parentId], references: [id])
+  replies  Comment[] @relation("Thread")
+
+  createdAt DateTime @default(now())
+}
+
+model UserResourceProgress {
+  id         Int    @id @default(autoincrement())
+  userId     String
+  resourceId Int
+
+  favorite  Boolean @default(false)
+  exploited Boolean @default(false)
+  saved     Boolean @default(false)
+
+  user     User     @relation(fields: [userId], references: [id])
+  resource Resource @relation(fields: [resourceId], references: [id])
+
+  @@unique([userId, resourceId])
+}
+
+model ActivitySession {
+  id         Int    @id @default(autoincrement())
+  resourceId Int
+  creatorId  String
+
+  resource Resource @relation(fields: [resourceId], references: [id])
+  creator  User     @relation("CreatedSessions", fields: [creatorId], references: [id])
+
+  participants ActivityParticipant[]
+  messages     ActivityMessage[]
+
+  createdAt DateTime @default(now())
+}
+
+model ActivityParticipant {
+  id        Int    @id @default(autoincrement())
+  sessionId Int
+  userId    String
+
+  session ActivitySession @relation(fields: [sessionId], references: [id])
+  user    User            @relation("ActivityParticipants", fields: [userId], references: [id])
+
+  @@unique([sessionId, userId])
+}
+
+model ActivityMessage {
+  id        Int    @id @default(autoincrement())
+  sessionId Int
+  authorId  String
+  content   String
+
+  session ActivitySession @relation(fields: [sessionId], references: [id])
+  author  User            @relation("ActivityMessages", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model StatEvent {
+  id         Int      @id @default(autoincrement())
+  event      StatType
+  userId     String?
+  resourceId Int?
+  createdAt  DateTime @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id])
+  resource Resource? @relation(fields: [resourceId], references: [id])
+}
+
+enum StatType {
+  VIEW_RESOURCE
+  SEARCH
+  SHARE
+  CREATE_RESOURCE
+}

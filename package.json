@@ -5,11 +5,7 @@
     "apps/*"
   ],
   "scripts": {
-    "install:all": "npm install",
-    "start:front": "npm --prefix ./apps/front run dev",
-    "start:back": "npm --prefix ./apps/back run dev",
-    "build:front": "npm --prefix ./apps/front run build",
-    "build:back": "npm --prefix ./apps/back run build"
+    "install:all": "npm install"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
