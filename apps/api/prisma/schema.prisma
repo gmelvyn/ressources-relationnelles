@@ -12,7 +12,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas = ["rrb"]
 }
 
 model User {
@@ -30,11 +29,9 @@ model User {
   statEvents StatEvent[]
   
   createdAt DateTime @default(now())
-  createdSessions ActivitySession[] @relation("CreatedSessions")
-  activityParticipants ActivityParticipant[] @relation("ActivityParticipants")
-  activityMessages ActivityMessage[] @relation("ActivityMessages")
-    
-  @@schema("rrb")
+    createdSessions ActivitySession[] @relation("CreatedSessions")
+    activityParticipants ActivityParticipant[] @relation("ActivityParticipants")
+    activityMessages ActivityMessage[] @relation("ActivityMessages")
 }
 
 enum Role {
@@ -42,7 +39,6 @@ enum Role {
   MODERATOR
   ADMIN
   SUPERADMIN
-  @@schema("rrb")
 }
 
 model Resource {
@@ -69,49 +65,37 @@ model Resource {
   stats       StatEvent[]
 
   createdAt DateTime @default(now())
-  activitySessions ActivitySession[]
-
-  @@schema("rrb")
+    activitySessions ActivitySession[]
 }
 
 enum Visibility {
   PRIVATE
   SHARED
   PUBLIC
-
-  @@schema("rrb")
 }
 
 enum ResourceStatus {
   PENDING
   PUBLISHED
   SUSPENDED
-
-  @@schema("rrb")
 }
 
 model Category {
   id   Int @id @default(autoincrement())
   name String @unique
   resources Resource[]
-
-  @@schema("rrb")
 }
 
 model RelationType {
   id   Int @id @default(autoincrement())
   name String @unique
   resources Resource[]
-
-  @@schema("rrb")
 }
 
 model ResourceType {
   id   Int @id @default(autoincrement())
   name String @unique
   resources Resource[]
-
-  @@schema("rrb")
 }
 
 model Comment {
@@ -130,8 +114,6 @@ model Comment {
   replies    Comment[] @relation("Thread")
 
   createdAt DateTime @default(now())
-
-  @@schema("rrb")
 }
 
 model UserResourceProgress {
@@ -147,8 +129,6 @@ model UserResourceProgress {
   resource    Resource @relation(fields: [resourceId], references: [id])
 
   @@unique([userId, resourceId])
-
-  @@schema("rrb")
 }
 
 model ActivitySession {
@@ -163,8 +143,6 @@ model ActivitySession {
   messages     ActivityMessage[]
 
   createdAt DateTime @default(now())
-
-  @@schema("rrb")
 }
 
 model ActivityParticipant {
@@ -176,8 +154,6 @@ model ActivityParticipant {
     user      User @relation("ActivityParticipants", fields: [userId], references: [id])
 
   @@unique([sessionId, userId])
-
-  @@schema("rrb")
 }
 
 model ActivityMessage {
@@ -190,8 +166,6 @@ model ActivityMessage {
     author    User @relation("ActivityMessages", fields: [authorId], references: [id])
 
   createdAt DateTime @default(now())
-
-  @@schema("rrb")
 }
 
 model StatEvent {
@@ -203,8 +177,6 @@ model StatEvent {
 
   user      User? @relation(fields: [userId], references: [id])
   resource  Resource? @relation(fields: [resourceId], references: [id])
-
-  @@schema("rrb")
 }
 
 enum StatType {
@@ -212,6 +184,4 @@ enum StatType {
   SEARCH
   SHARE
   CREATE_RESOURCE
-
-  @@schema("rrb")
 }
