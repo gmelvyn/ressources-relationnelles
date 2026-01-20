@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
 @Injectable()
 export class ActivitiesService {
+  constructor(private prisma: PrismaService) {}
+
   create(createActivityDto: CreateActivityDto) {
-    return 'This action adds a new activity';
+    return this.prisma.activityMessage.findFirstOrThrow({
+      where: {
+        id: 4,
+      },
+    });
   }
 
   findAll() {
