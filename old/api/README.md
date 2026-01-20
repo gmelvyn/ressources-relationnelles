@@ -1,3 +1,0 @@
-# 🔧 API
-
-NESTJS + PRISMA
