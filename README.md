@@ -1,58 +1,36 @@
-# RESources Relationnelles
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-# 📋 À propos du projet
+## Getting Started
 
-RESources Relationnelles est une plateforme Web et mobile fictive développée dans le cadre d'un appel d'offres du Ministère des Solidarités et de la Santé. Le projet vise à fournir aux citoyens des outils et ressources pour créer, renforcer et enrichir leurs relations dans tous les domaines de la vie.
+First, run the development server:
 
-# 🎯 Objectifs
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-- Mettre à disposition un catalogue dynamique de ressources (articles, vidéos, podcasts, exercices pratiques)
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- Permettre aux utilisateurs de créer et partager leurs propres contenus
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- Faciliter la recherche et la consultation de ressources adaptées aux besoins de chacun
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- Offrir des fonctionnalités collaboratives : favoris, suivi de progression, commentaires
+## Learn More
 
-- Générer des statistiques d'utilisation pour améliorer le service
+To learn more about Next.js, take a look at the following resources:
 
-# 🚀 Fonctionnalités principales
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Pour les citoyens :
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-- Consultation du catalogue de ressources
+## Deploy on Vercel
 
-- Création et partage de contenus
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-- Gestion de favoris et suivi de progression
-
-- Commentaires et interactions
-
-- Pour les modérateurs
-  Modération des contenus utilisateurs
-
-- Validation des ressources soumises
-
-### Pour les administrateurs
-
-- Gestion complète du catalogue
-
-- Création de catégories et types de ressources
-
-- Édition de statistiques détaillées
-
-- Administration des utilisateurs
-
-# 🛠️ Stack
-
-## Frontend
-
-Web : **React + vite**
-
-Mobile : _En cours de débats_
-
-## Backend
-
-API : **Nestjs**
-
-DB : **Posgresql**
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
