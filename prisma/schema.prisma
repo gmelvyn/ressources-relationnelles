@@ -16,6 +16,12 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  firstName     String?
+  lastName      String?
+  username      String?   @unique
+
+  posts         Post[]
   sessions      Session[]
   accounts      Account[]
 
@@ -26,6 +32,20 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@map("post")
 }
 
 model Session {
