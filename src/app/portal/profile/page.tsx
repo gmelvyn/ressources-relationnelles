@@ -44,7 +44,7 @@ export default function ProfilePage() {
       {/* Profile Header Card */}
       <Card className="overflow-hidden">
         {/* Cover Image Placeholder */}
-        <div className="h-32 w-full bg-gradient-to-r from-blue-500 to-red-500 md:h-48"></div>
+        <div className="h-32 w-full bg-linear-to-r from-blue-500 to-red-500 md:h-48"></div>
 
         <CardContent className="relative pt-0">
           <div className="flex justify-between items-end -mt-12 mb-4 px-2">

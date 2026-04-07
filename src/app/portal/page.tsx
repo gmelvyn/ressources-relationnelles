@@ -1,6 +1,6 @@
+import { PortalHeader } from "@/components/layout/portal-header";
+import { PortalSidebar } from "@/components/layout/portal-sidebar";
 import { Feed } from "@/components/portal/feed";
-import { PortalHeader } from "@/components/portal/portal-header";
-import { PortalSidebar } from "@/components/portal/portal-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -43,9 +43,9 @@ export default async function PortalHome() {
 
         {/* Main Feed */}
         <main className="flex w-full max-w-[600px] flex-col gap-6 mx-auto">
-          <Feed 
-            initialPosts={posts} 
-            currentUser={session?.user} 
+          <Feed
+            initialPosts={posts}
+            currentUser={session?.user}
           />
         </main>
 
