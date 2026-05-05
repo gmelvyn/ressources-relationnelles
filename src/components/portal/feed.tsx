@@ -139,7 +139,7 @@ export function Feed({ initialPosts, currentUser }: FeedProps) {
             </p>
           </div>
           <Button
-            onClick={() => document.getElementById("post-form")?.requestSubmit()}
+            onClick={() => (document.getElementById("post-form") as HTMLFormElement | null)?.requestSubmit()}
             disabled={(!content.trim() && !selectedImage) || isPending || !currentUser}
           >
             <Send className="mr-2 h-4 w-4" /> {isPending ? "Publication..." : "Publier"}
