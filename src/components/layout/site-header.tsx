@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpenCheck, LayoutDashboard, ShieldCheck, UserRound } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { canModerate } from "@/lib/permissions";
 import type { CurrentUser } from "@/lib/session";
@@ -40,6 +41,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {user ? (
             <>
               <Button asChild variant="outline" className="hidden sm:inline-flex">
