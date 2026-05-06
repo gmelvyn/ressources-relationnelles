@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "postinstall": "bunx prisma generate && bunx prisma migrate deploy"
+    "prisma:generate": "bunx prisma generate",
+    "migrate:deploy": "bunx prisma migrate deploy",
+    "postinstall": "bun run prisma:generate && bun run migrate:deploy"
   },
   "dependencies": {
     "next": "16.2.4",
