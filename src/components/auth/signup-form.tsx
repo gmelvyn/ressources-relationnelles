@@ -103,10 +103,10 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
         email,
         password,
         name: email.split("@")[0],
-        callbackURL: "/portal",
+        callbackURL: "/dashboard",
         fetchOptions: {
           onSuccess: () => {
-            router.push("/portal")
+            router.push("/dashboard")
           }
         }
       });

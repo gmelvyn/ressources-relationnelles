@@ -1,5 +1,6 @@
 import { LoginForm } from "@/components/auth/login-form"
 import Link from "next/link"
+import { Suspense } from "react"
 import { GiFrance } from "react-icons/gi"
 
 export default function LoginPage() {
@@ -12,7 +13,9 @@ export default function LoginPage() {
           </div>
           RESources Relationnelles
         </Link>
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   )

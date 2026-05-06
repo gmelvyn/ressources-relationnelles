@@ -17,27 +17,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authClient } from "@/lib/auth-client";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
   const { data: session } = authClient.useSession();
-  const [formData, setFormData] = useState({
-    username: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-  });
-
-  useEffect(() => {
-    if (session?.user) {
-      setFormData({
-        username: session.user.email || "", // Fallback as username might not be in standard session
-        firstName: session.user.name?.split(" ")[0] || "",
-        lastName: session.user.name?.split(" ").slice(1).join(" ") || "",
-        email: session.user.email || "",
-      });
-    }
-  }, [session]);
+  const firstName = session?.user?.name?.split(" ")[0] || "";
+  const lastName = session?.user?.name?.split(" ").slice(1).join(" ") || "";
 
   return (
     <div className="container mx-auto max-w-4xl py-6">
@@ -72,8 +56,7 @@ export default function SettingsPage() {
                 <Input 
                   id="username" 
                   placeholder="@monpseudo" 
-                  value={formData.username}
-                  onChange={(e) => setFormData({...formData, username: e.target.value})}
+                  defaultValue={session?.user?.email || ""}
                 />
               </div>
               <div className="grid w-full items-center gap-1.5">
@@ -102,16 +85,14 @@ export default function SettingsPage() {
                   <Label htmlFor="firstname">Prénom</Label>
                   <Input 
                     id="firstname" 
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    defaultValue={firstName}
                   />
                 </div>
                 <div className="grid gap-1.5">
                   <Label htmlFor="lastname">Nom</Label>
                   <Input 
                     id="lastname" 
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    defaultValue={lastName}
                   />
                 </div>
               </div>
@@ -120,7 +101,7 @@ export default function SettingsPage() {
                 <Input 
                   id="email" 
                   type="email" 
-                  value={formData.email}
+                  value={session?.user?.email || ""}
                   disabled
                   className="bg-muted"
                 />

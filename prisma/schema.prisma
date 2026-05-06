@@ -22,6 +22,13 @@ model User {
   username      String?   @unique
 
   posts         Post[]
+  resources     Resource[] @relation("ResourceAuthor")
+  comments      ResourceComment[]
+  progress      ResourceProgress[]
+  activitySessions ActivitySession[] @relation("ActivityOwner")
+  sessionParticipations ActivitySessionParticipant[]
+  activityMessages ActivityMessage[]
+  moderationEvents ResourceModeration[] @relation("ResourceModerator")
   sessions      Session[]
   accounts      Account[]
 
@@ -46,6 +53,228 @@ model Post {
 
   @@index([authorId])
   @@map("post")
+}
+
+model ResourceCategory {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String
+  color       String     @default("#0f766e")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  resources   Resource[]
+
+  @@unique([name])
+  @@map("resource_category")
+}
+
+model RelationType {
+  id          String             @id @default(cuid())
+  name        String
+  slug        String             @unique
+  description String
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  resources   ResourceRelation[]
+
+  @@unique([name])
+  @@map("relation_type")
+}
+
+model ResourceType {
+  id                String     @id @default(cuid())
+  name              String
+  slug              String     @unique
+  description       String
+  supportsActivity  Boolean    @default(false)
+  supportsMessaging Boolean    @default(false)
+  isSystem          Boolean    @default(true)
+  isActive          Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  resources         Resource[]
+
+  @@unique([name])
+  @@map("resource_type")
+}
+
+model Resource {
+  id              String             @id @default(cuid())
+  title           String
+  slug            String             @unique
+  summary         String
+  content         String
+  sourceUrl       String?
+  imageUrl        String?
+  language        String             @default("fr")
+  durationMinutes Int?
+  difficulty      String             @default("accessible")
+  visibility      String             @default("PUBLIC")
+  status          String             @default("PUBLISHED")
+  viewCount       Int                @default(0)
+  searchCount     Int                @default(0)
+  shareCount      Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  publishedAt     DateTime?
+  suspendedAt     DateTime?
+
+  categoryId      String
+  category        ResourceCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  typeId          String
+  type            ResourceType       @relation(fields: [typeId], references: [id], onDelete: Restrict)
+
+  authorId        String?
+  author          User?              @relation("ResourceAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  relations       ResourceRelation[]
+  comments        ResourceComment[]
+  progress        ResourceProgress[]
+  activitySessions ActivitySession[]
+  moderationEvents ResourceModeration[]
+
+  @@index([categoryId])
+  @@index([typeId])
+  @@index([authorId])
+  @@index([status, visibility])
+  @@map("resource")
+}
+
+model ResourceRelation {
+  resourceId     String
+  relationTypeId String
+
+  resource       Resource     @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  relationType   RelationType @relation(fields: [relationTypeId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, relationTypeId])
+  @@index([relationTypeId])
+  @@map("resource_relation")
+}
+
+model ResourceProgress {
+  id          String    @id @default(cuid())
+  status      String    @default("NOT_STARTED")
+  isFavorite  Boolean   @default(false)
+  isSaved     Boolean   @default(false)
+  startedAt   DateTime?
+  exploitedAt DateTime?
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId  String
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@index([resourceId])
+  @@map("resource_progress")
+}
+
+model ResourceComment {
+  id              String            @id @default(cuid())
+  content         String
+  status          String            @default("VISIBLE")
+  moderationReason String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  resourceId      String
+  resource        Resource          @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  authorId        String
+  author          User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  parentId        String?
+  parent          ResourceComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         ResourceComment[] @relation("CommentReplies")
+
+  @@index([resourceId])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("resource_comment")
+}
+
+model ActivitySession {
+  id           String                       @id @default(cuid())
+  title        String
+  status       String                       @default("OPEN")
+  inviteCode   String                       @unique
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+
+  resourceId   String
+  resource     Resource                     @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  ownerId      String
+  owner        User                         @relation("ActivityOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  participants ActivitySessionParticipant[]
+  messages     ActivityMessage[]
+
+  @@index([resourceId])
+  @@index([ownerId])
+  @@map("activity_session")
+}
+
+model ActivitySessionParticipant {
+  sessionId String
+  userId    String
+  role      String   @default("PARTICIPANT")
+  status    String   @default("INVITED")
+  joinedAt  DateTime?
+  createdAt DateTime @default(now())
+
+  session   ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, userId])
+  @@index([userId])
+  @@map("activity_session_participant")
+}
+
+model ActivityMessage {
+  id        String          @id @default(cuid())
+  content   String
+  createdAt DateTime        @default(now())
+
+  sessionId String
+  session   ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([authorId])
+  @@map("activity_message")
+}
+
+model ResourceModeration {
+  id          String    @id @default(cuid())
+  targetType  String
+  targetId    String
+  action      String
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  resourceId  String?
+  resource    Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+
+  moderatorId String?
+  moderator   User?     @relation("ResourceModerator", fields: [moderatorId], references: [id], onDelete: SetNull)
+
+  @@index([resourceId])
+  @@index([moderatorId])
+  @@map("resource_moderation")
 }
 
 model Session {

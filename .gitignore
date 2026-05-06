@@ -34,10 +34,13 @@ yarn-error.log*
 .env*
 
 # vercel
-.vercel
+.vercelR
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
 /src/lib/generated/
+
+# 
+/sources

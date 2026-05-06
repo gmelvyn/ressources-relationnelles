@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx prisma/seed.ts",
+    "prisma:generate": "bunx prisma generate",
+    "migrate:deploy": "bunx prisma migrate deploy",
+    "postinstall": "bun run prisma:generate && bun run migrate:deploy"
   },
   "dependencies": {
     "next": "16.2.4",
