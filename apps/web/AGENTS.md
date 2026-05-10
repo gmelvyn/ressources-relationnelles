@@ -23,4 +23,4 @@ There is no committed automated test suite yet. Until one is added, treat `bun r
 Recent history follows short Conventional Commit-style subjects such as `feat: add portal header and sidebar components` and `chore: update dependencies`. Keep commits focused and use prefixes like `feat:`, `fix:`, `chore:`, or `refactor:`. Pull requests should include a short summary, linked issue when relevant, notes about schema or env changes, and screenshots for UI updates.
 
 ## Security & Configuration Tips
-Do not commit `.env`. Start from `exemple.env`, then set `DATABASE_URL`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL`. Keep secrets local, and review generated files in `public/uploads/` before committing.
+Do not commit `.env`. Start from `exemple.env`, then set `DATABASE_URL`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL`. Keep secrets local, and review generated files in `public/uploads/` before committing
