@@ -12,7 +12,6 @@ import { fr } from "date-fns/locale";
 import { Image as ImageIcon, MessageSquare, MoreHorizontal, Send, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 
 type PostWithAuthor = {
@@ -46,10 +45,9 @@ export function Feed({ initialPosts, currentUser }: FeedProps) {
     defaultValues: {
       content: "",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
-        content: z.string().optional(),
+        content: z.string(),
       }).refine((data) => data.content?.trim() || selectedImage, {
         message: "Le post ne peut pas être vide.",
       }),

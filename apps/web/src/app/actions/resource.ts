@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canAdminCatalog, canAdminUsers, canModerate, normalizeRole } from "@/lib/permissions";
 import { getCurrentUser } from "@/lib/session";
-import { createResource, updateResourceProgress, createResourceComment } from "@/lib/resources";
+import {
+  ResourceCatalogValidationError,
+  createResource,
+  updateResourceProgress,
+  createResourceComment,
+} from "@/lib/resources";
 import { moderateResource, createCategory, updateUserRole, toggleUserStatus } from "@/lib/admin";
 
 function formString(formData: FormData, key: string) {
@@ -60,6 +65,10 @@ export async function createResourceAction(formData: FormData) {
           : "Ressource envoyée en modération avant publication.",
     };
   } catch (error) {
+    if (error instanceof ResourceCatalogValidationError) {
+      return { error: error.message };
+    }
+
     console.error("Erreur de création de ressource", error);
     return { error: "Impossible d'enregistrer la ressource." };
   }

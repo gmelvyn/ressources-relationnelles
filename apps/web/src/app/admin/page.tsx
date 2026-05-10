@@ -3,7 +3,7 @@ import { BarChart3, BookOpenCheck, MessageSquare, ShieldAlert, UsersRound } from
 import { Badge } from "@/components/ui/badge";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ResourceCard } from "@/components/resources/resource-card";
-import { canAdminCatalog, canAdminUsers, canModerate, roleLabel } from "@/lib/permissions";
+import { canAdminCatalog, canAdminUsers, canModerate, normalizeRole, roleLabel } from "@/lib/permissions";
 import { getAdminOverview, getAdminUsers, getResources } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 import { UserRoleForm } from "@/components/admin/user-role-form";
@@ -82,11 +82,11 @@ export default async function AdminPage() {
                     <p className="font-medium">{managedUser.name}</p>
                     <p className="text-xs text-muted-foreground">{managedUser.email}</p>
                   </div>
-                  <UserRoleForm userId={managedUser.id} currentRole={managedUser.role} />
+                  <UserRoleForm userId={managedUser.id} currentRole={normalizeRole(managedUser.role)} />
                   <span>{managedUser.banned ? "Désactivé" : "Actif"}</span>
                   <UserStatusForm
                     userId={managedUser.id}
-                    isBanned={managedUser.banned}
+                    isBanned={managedUser.banned ?? false}
                     isDisabled={managedUser.id === user.id}
                   />
                 </div>

@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ResourceForm } from "@/components/resources/resource-form";
-import { getCatalogMeta } from "@/lib/resources";
+import { getWritableCatalogMeta } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function NewResourcePage() {
     redirect("/login");
   }
 
-  const meta = await getCatalogMeta();
+  const meta = await getWritableCatalogMeta();
 
   return (
     <main className="min-h-screen bg-background">
@@ -35,7 +35,14 @@ export default async function NewResourcePage() {
             Les ressources publiques et partagées sont soumises à validation avant publication.
           </p>
         </div>
-        <ResourceForm meta={meta} />
+        {meta ? (
+          <ResourceForm meta={meta} />
+        ) : (
+          <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+            Le catalogue de catégories, types et relations n'est pas encore initialisé. Lancez le seed
+            Prisma ou créez les entrées de catalogue depuis l'administration avant de proposer une ressource.
+          </div>
+        )}
       </div>
     </main>
   );

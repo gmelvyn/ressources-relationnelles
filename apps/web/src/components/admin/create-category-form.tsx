@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 import { createCategoryAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ export function CreateCategoryForm() {
       description: "",
       color: "#0f766e",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
         name: z.string().min(1, "Nom requis"),

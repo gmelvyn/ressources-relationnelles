@@ -123,8 +123,39 @@ export type CreateResourceInput = {
   relationTypeIds: string[];
 };
 
+export class ResourceCatalogValidationError extends Error {
+  constructor(message = "La catégorie, le type ou la relation sélectionnée n'existe plus.") {
+    super(message);
+    this.name = "ResourceCatalogValidationError";
+  }
+}
+
+async function validateResourceCatalog(input: Pick<CreateResourceInput, "categoryId" | "typeId" | "relationTypeIds">) {
+  const [category, type, relationTypes] = await Promise.all([
+    prisma.resourceCategory.findFirst({
+      where: { id: input.categoryId, isActive: true },
+      select: { id: true },
+    }),
+    prisma.resourceType.findFirst({
+      where: { id: input.typeId, isActive: true },
+      select: { id: true },
+    }),
+    prisma.relationType.findMany({
+      where: { id: { in: input.relationTypeIds }, isActive: true },
+      select: { id: true },
+    }),
+  ]);
+
+  const uniqueRelationTypeIds = new Set(input.relationTypeIds);
+
+  if (!category || !type || relationTypes.length !== uniqueRelationTypeIds.size) {
+    throw new ResourceCatalogValidationError();
+  }
+}
+
 export async function createResource(userId: string, userRole: string, input: CreateResourceInput) {
   const status = canModerate(userRole) || input.visibility === "PRIVATE" ? "PUBLISHED" : "PENDING_REVIEW";
+  await validateResourceCatalog(input);
 
   return await prisma.resource.create({
     data: {
@@ -344,6 +375,29 @@ export async function getCatalogMeta(): Promise<CatalogMeta> {
   }
 
   return fixtureMeta();
+}
+
+export async function getWritableCatalogMeta(): Promise<CatalogMeta | null> {
+  const [categories, relationTypes, resourceTypes] = await Promise.all([
+    prisma.resourceCategory.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.relationType.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.resourceType.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  if (!categories.length || !relationTypes.length || !resourceTypes.length) {
+    return null;
+  }
+
+  return { categories, relationTypes, resourceTypes };
 }
 
 export async function getResources(filters: ResourceFilters = {}, userId?: string | null) {

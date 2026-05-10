@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 import { createCommentAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,6 @@ export function CommentForm({ resourceId, slug, parentId, isAuthenticated }: Com
     defaultValues: {
       content: "",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
         content: z.string().min(2, "Le commentaire est trop court").max(1200, "Le commentaire est trop long"),

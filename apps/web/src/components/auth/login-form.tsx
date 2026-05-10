@@ -12,7 +12,6 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
-import { zodValidator } from "@tanstack/zod-form-adapter"
 import { z } from "zod"
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
@@ -33,11 +32,11 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       password: "",
       rememberMe: false,
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
         email: z.string().email("Email invalide"),
         password: z.string().min(1, "Mot de passe requis"),
+        rememberMe: z.boolean(),
       }),
     },
     onSubmit: async ({ value }) => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 import { moderateResourceAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ export function ModerateResourceForm({ resourceId }: ModerateResourceFormProps) 
     defaultValues: {
       reason: "",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
         reason: z.string().min(1, "Motif requis"),

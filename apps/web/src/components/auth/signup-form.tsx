@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { z } from "zod"
 import { useForm } from "@tanstack/react-form"
-import { zodValidator } from "@tanstack/zod-form-adapter"
 
 const passwordSchema = z
   .string()
@@ -54,7 +53,6 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
       password: "",
       confirmPassword: "",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: z.object({
         email: z.string().email("Email invalide"),
@@ -179,7 +177,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                             {field.state.meta.errors.length > 0 && (
                               <ul className="text-sm text-red-500 space-y-1 list-disc pl-5">
                                 {field.state.meta.errors.map((error, index) => (
-                                  <li key={index}>{error}</li>
+                                  <li key={index}>{typeof error === "string" ? error : (error?.message ?? "Champ invalide")}</li>
                                 ))}
                               </ul>
                             )}

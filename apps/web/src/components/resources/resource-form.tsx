@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
 import { z } from "zod";
 import { createResourceAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,8 @@ type ResourceFormProps = {
   meta: CatalogMeta;
 };
 
+type ResourceVisibility = "PUBLIC" | "RESTRICTED" | "SHARED" | "PRIVATE";
+
 const resourceSchema = z.object({
   title: z.string().min(1, "Titre requis").max(140, "Le titre est trop long"),
   summary: z.string().min(1, "Résumé requis").max(300, "Le résumé est trop long"),
@@ -22,9 +23,9 @@ const resourceSchema = z.object({
   categoryId: z.string().min(1, "Catégorie requise"),
   typeId: z.string().min(1, "Type requis"),
   visibility: z.enum(["PUBLIC", "RESTRICTED", "SHARED", "PRIVATE"]),
-  durationMinutes: z.coerce.number().min(1).optional(),
+  durationMinutes: z.number().min(0),
   relationTypeIds: z.array(z.string()).min(1, "Au moins une relation est requise"),
-  sourceUrl: z.string().url("URL invalide").optional().or(z.literal("")),
+  sourceUrl: z.string().url("URL invalide").or(z.literal("")),
 });
 
 export function ResourceForm({ meta }: ResourceFormProps) {
@@ -38,12 +39,11 @@ export function ResourceForm({ meta }: ResourceFormProps) {
       content: "",
       categoryId: "",
       typeId: "",
-      visibility: "PUBLIC" as const,
-      durationMinutes: undefined as number | undefined,
+      visibility: "PUBLIC" as ResourceVisibility,
+      durationMinutes: 0,
       relationTypeIds: [] as string[],
       sourceUrl: "",
     },
-    validatorAdapter: zodValidator(),
     validators: {
       onChange: resourceSchema,
     },
@@ -58,7 +58,7 @@ export function ResourceForm({ meta }: ResourceFormProps) {
       formData.append("categoryId", value.categoryId);
       formData.append("typeId", value.typeId);
       formData.append("visibility", value.visibility);
-      if (value.durationMinutes) formData.append("durationMinutes", value.durationMinutes.toString());
+      if (value.durationMinutes > 0) formData.append("durationMinutes", value.durationMinutes.toString());
       if (value.sourceUrl) formData.append("sourceUrl", value.sourceUrl);
       value.relationTypeIds.forEach((id) => formData.append("relationTypeIds", id));
 
@@ -205,9 +205,9 @@ export function ResourceForm({ meta }: ResourceFormProps) {
                 type="number"
                 min="1"
                 placeholder="15"
-                value={field.state.value ?? ""}
+                value={field.state.value || ""}
                 onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                onChange={(e) => field.handleChange(e.target.value ? parseInt(e.target.value) : 0)}
               />
             </div>
           )}

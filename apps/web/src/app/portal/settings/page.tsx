@@ -18,8 +18,6 @@ import { authClient } from "@/lib/auth-client";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "@tanstack/react-form";
-import { zodValidator } from "@tanstack/zod-form-adapter";
-import { z } from "zod";
 
 export default function SettingsPage() {
   const { data: session } = authClient.useSession();
@@ -31,7 +29,6 @@ export default function SettingsPage() {
       username: session?.user?.email || "",
       bio: "",
     },
-    validatorAdapter: zodValidator(),
     onSubmit: async ({ value }) => {
       console.log("Saving profile:", value);
       // Implementation placeholder
@@ -44,7 +41,6 @@ export default function SettingsPage() {
       lastName,
       password: "",
     },
-    validatorAdapter: zodValidator(),
     onSubmit: async ({ value }) => {
       console.log("Saving account:", value);
       // Implementation placeholder
@@ -57,7 +53,6 @@ export default function SettingsPage() {
       pushNotifs: true,
       marketingNotifs: false,
     },
-    validatorAdapter: zodValidator(),
     onSubmit: async ({ value }) => {
       console.log("Saving notifications:", value);
       // Implementation placeholder
