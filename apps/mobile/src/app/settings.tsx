@@ -1,21 +1,33 @@
-import { router } from 'expo-router';
-import { ArrowLeft, Save } from 'lucide-react-native';
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { router } from "expo-router";
+import { ArrowLeft, Save } from "lucide-react-native";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 
-import { authClient } from '@/lib/auth-client';
-import { Button, Card, Chip, EmptyState, Field, Header, Screen } from '@/components/mobile-ui';
-import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { authClient } from "@/lib/auth-client";
+import {
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  Field,
+  Header,
+  Screen,
+} from "@/components/mobile-ui";
+import { ThemedText } from "@/components/themed-text";
+import { Spacing } from "@/constants/theme";
 
 export default function SettingsScreen() {
   const sessionQuery = authClient.useSession();
   const session = sessionQuery.data;
-  const [tab, setTab] = useState<'profile' | 'account' | 'notifications'>('profile');
-  const [username, setUsername] = useState(session?.user?.email ?? '');
-  const [bio, setBio] = useState('');
-  const [firstName, setFirstName] = useState(session?.user?.name?.split(' ')[0] ?? '');
-  const [lastName, setLastName] = useState(session?.user?.name?.split(' ').slice(1).join(' ') ?? '');
+  const [tab, setTab] = useState<"profile" | "account">("profile");
+  const [username, setUsername] = useState(session?.user?.email ?? "");
+  const [bio, setBio] = useState("");
+  const [firstName, setFirstName] = useState(
+    session?.user?.name?.split(" ")[0] ?? "",
+  );
+  const [lastName, setLastName] = useState(
+    session?.user?.name?.split(" ").slice(1).join(" ") ?? "",
+  );
   const [saved, setSaved] = useState(false);
 
   if (!session?.user) {
@@ -24,8 +36,11 @@ export default function SettingsScreen() {
         <Button variant="ghost" icon={ArrowLeft} onPress={() => router.back()}>
           Retour
         </Button>
-        <EmptyState title="Connexion requise" text="Connectez-vous pour acceder aux parametres." />
-        <Button onPress={() => router.push('/login')}>Se connecter</Button>
+        <EmptyState
+          title="Connexion requise"
+          text="Connectez-vous pour acceder aux parametres."
+        />
+        <Button onPress={() => router.push("/login")}>Se connecter</Button>
       </Screen>
     );
   }
@@ -42,35 +57,39 @@ export default function SettingsScreen() {
       <Header eyebrow="Parametres" title="Reglages du compte" />
 
       <View style={styles.tabs}>
-        <Chip label="Profil" selected={tab === 'profile'} onPress={() => setTab('profile')} />
-        <Chip label="Compte" selected={tab === 'account'} onPress={() => setTab('account')} />
-        <Chip label="Notifications" selected={tab === 'notifications'} onPress={() => setTab('notifications')} />
+        <Chip
+          label="Profil"
+          selected={tab === "profile"}
+          onPress={() => setTab("profile")}
+        />
+        <Chip
+          label="Compte"
+          selected={tab === "account"}
+          onPress={() => setTab("account")}
+        />
       </View>
 
       <Card>
-        {tab === 'profile' ? (
+        {tab === "profile" ? (
           <>
             <ThemedText type="smallBold">Informations publiques</ThemedText>
             <Field label="Pseudo" value={username} onChangeText={setUsername} />
             <Field label="Bio" value={bio} onChangeText={setBio} multiline />
           </>
         ) : null}
-        {tab === 'account' ? (
+        {tab === "account" ? (
           <>
             <ThemedText type="smallBold">Informations personnelles</ThemedText>
-            <Field label="Prenom" value={firstName} onChangeText={setFirstName} />
+            <Field
+              label="Prenom"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
             <Field label="Nom" value={lastName} onChangeText={setLastName} />
             <Field label="Email" value={session.user.email} editable={false} />
           </>
         ) : null}
-        {tab === 'notifications' ? (
-          <>
-            <ThemedText type="smallBold">Preferences de notifications</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              Notifications par email et push activees pour les activites importantes.
-            </ThemedText>
-          </>
-        ) : null}
+
         {saved ? (
           <ThemedText type="small" themeColor="success">
             Preferences enregistrees localement.
@@ -86,8 +105,8 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   tabs: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: Spacing.two,
   },
 });

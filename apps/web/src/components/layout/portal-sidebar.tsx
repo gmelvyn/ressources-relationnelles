@@ -18,12 +18,6 @@ export function PortalSidebar() {
             Explorer
           </Button>
         </Link>
-        <Link href="/portal/notifications">
-          <Button variant="ghost" className="w-full justify-start">
-            <Bell className="mr-2 h-4 w-4" />
-            Notifications
-          </Button>
-        </Link>
         <Link href="/portal/saved">
           <Button variant="ghost" className="w-full justify-start">
             <Bookmark className="mr-2 h-4 w-4" />

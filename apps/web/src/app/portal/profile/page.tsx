@@ -41,6 +41,18 @@ type LikedResource = {
   createdAt: string;
 };
 
+type UserResource = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  imageUrl: string | null;
+  status: string;
+  visibility: string;
+  createdAt: string;
+  category: { name: string; color: string };
+};
+
 type Comment = {
   id: string;
   content: string;
@@ -53,6 +65,7 @@ export default function ProfilePage() {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [likedResources, setLikedResources] = useState<LikedResource[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
+  const [userResources, setUserResources] = useState<UserResource[]>([]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -67,6 +80,10 @@ export default function ProfilePage() {
     fetch("/api/me/comments")
       .then((r) => r.json())
       .then((data) => Array.isArray(data) && setUserComments(data))
+      .catch(() => {});
+    fetch("/api/me/resources")
+      .then((r) => r.json())
+      .then((data) => Array.isArray(data) && setUserResources(data))
       .catch(() => {});
   }, [session?.user?.id]);
 
@@ -83,9 +100,6 @@ export default function ProfilePage() {
           <h1 className="text-xl font-bold">
             {session?.user?.name ?? "Chargement..."}
           </h1>
-          <p className="text-xs text-muted-foreground">
-            {userPosts.length} posts
-          </p>
         </div>
       </div>
 
@@ -128,40 +142,18 @@ export default function ProfilePage() {
               {(session?.user as { bio?: string })?.bio || ""}
             </p>
           </div>
-
-          <div className="mt-4 flex flex-wrap gap-4 px-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>Paris, France</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>A rejoint en Janvier 2026</span>
-            </div>
-          </div>
-
-          <div className="mt-4 flex gap-4 px-2 text-sm">
-            <div className="flex gap-1">
-              <span className="font-bold">128</span>
-              <span className="text-muted-foreground">Abonnements</span>
-            </div>
-            <div className="flex gap-1">
-              <span className="font-bold">256</span>
-              <span className="text-muted-foreground">Abonnés</span>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
       {/* Profile Content Tabs */}
       <div className="mt-6">
-        <Tabs defaultValue="posts" className="w-full">
+        <Tabs defaultValue="resources" className="w-full">
           <TabsList className="w-full justify-start border-b bg-transparent p-0">
             <TabsTrigger
-              value="posts"
+              value="resources"
               className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent"
             >
-              Posts
+              Ressources
             </TabsTrigger>
             <TabsTrigger
               value="replies"
@@ -176,6 +168,67 @@ export default function ProfilePage() {
               J'aime
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="resources" className="mt-4 space-y-4">
+            {userResources.map((resource) => (
+              <Card key={resource.id}>
+                <CardContent className="flex items-start gap-4 p-4">
+                  {resource.imageUrl && (
+                    <img
+                      src={resource.imageUrl}
+                      alt=""
+                      className="h-16 w-16 rounded-md object-cover shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        href={`/resources/${resource.slug}`}
+                        className="font-semibold text-sm hover:underline"
+                      >
+                        {resource.title}
+                      </Link>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full text-white"
+                        style={{ backgroundColor: resource.category.color }}
+                      >
+                        {resource.category.name}
+                      </span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          resource.status === "PUBLISHED"
+                            ? "bg-green-100 text-green-700"
+                            : resource.status === "PENDING_REVIEW"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {resource.status === "PUBLISHED"
+                          ? "Publié"
+                          : resource.status === "PENDING_REVIEW"
+                            ? "En attente"
+                            : resource.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                      {resource.summary}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(resource.createdAt), {
+                        addSuffix: true,
+                        locale: fr,
+                      })}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {userResources.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground">
+                Aucune ressource proposée pour le moment.
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="posts" className="mt-4 space-y-4">
             {userPosts.map((post) => (
