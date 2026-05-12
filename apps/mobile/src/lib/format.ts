@@ -1,13 +1,13 @@
 export function difficultyLabel(value: string) {
-  if (value === 'avance') return 'Avancé';
-  if (value === 'intermediaire') return 'Intermédiaire';
+  if (value === 'avance') return 'Avance';
+  if (value === 'intermediaire') return 'Intermediaire';
   return 'Accessible';
 }
 
 export function roleLabel(role?: string | null) {
   switch (role) {
     case 'moderator':
-      return 'Modérateur';
+      return 'Moderateur';
     case 'catalog_admin':
       return 'Administrateur catalogue';
     case 'super_admin':

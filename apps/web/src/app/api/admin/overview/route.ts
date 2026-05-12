@@ -7,7 +7,7 @@ export async function GET() {
   const user = await getCurrentUser();
 
   if (!user || !canModerate(user.role)) {
-    return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    return NextResponse.json({ error: "Non autorise" }, { status: 403 });
   }
 
   const [overview, pendingResources, users] = await Promise.all([
