@@ -1,30 +1,31 @@
-"use client"
+"use client";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { authClient } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
-import { AlertCircle, KeyRound, Loader2 } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import { useForm } from "@tanstack/react-form"
-import { z } from "zod"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { AlertCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod";
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   const [error, setError] = useState<string | null>(null);
-  const [verifyEmailMessage, setVerifyEmailMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (searchParams.get('verifyEmail') === 'true') {
-      setVerifyEmailMessage("Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email.");
-    }
-  }, [searchParams]);
+  const verifyEmailMessage =
+    searchParams.get("verifyEmail") === "true"
+      ? "Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email."
+      : null;
 
   const form = useForm({
     defaultValues: {
@@ -40,7 +41,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
       }),
     },
     onSubmit: async ({ value }) => {
-      setLoading(true)
+      setLoading(true);
       setError(null);
       try {
         const { error } = await authClient.signIn.email({
@@ -50,38 +51,33 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           callbackURL: "/dashboard",
         });
         if (error) {
-          if (error.code === "EMAIL_NOT_VERIFIED") setError("Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email.");
-          else setError("Connexion échouée. Veuillez vérifier vos identifiants.");
+          if (error.code === "EMAIL_NOT_VERIFIED")
+            setError(
+              "Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email.",
+            );
+          else
+            setError("Connexion échouée. Veuillez vérifier vos identifiants.");
         }
       } finally {
         setLoading(false);
       }
     },
-  })
+  });
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Bienvenue</CardTitle>
-          <CardDescription>Connectez-vous avec votre clé d&apos;accès</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
-            <div className="flex flex-col gap-4">
-              <Button variant="outline" className="w-full">
-                <KeyRound />
-                Se connecter avec une clé d&apos;accès
-              </Button>
-            </div>
-            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-              <span className="relative z-10 bg-background px-2 text-muted-foreground rounded">Ou continuer avec</span>
-            </div>
+            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border"></div>
             <form
               onSubmit={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                form.handleSubmit()
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
               }}
             >
               <div className="grid gap-6">
@@ -93,11 +89,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 {verifyEmailMessage && (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Vérification de l&apos;email requise</AlertTitle>
+                    <AlertTitle>
+                      Vérification de l&apos;email requise
+                    </AlertTitle>
                     <AlertDescription>{verifyEmailMessage}</AlertDescription>
                   </Alert>
                 )}
-                
+
                 <form.Field
                   name="email"
                   children={(field) => (
@@ -111,10 +109,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        className={field.state.meta.errors.length > 0 ? "border-destructive" : ""}
+                        className={
+                          field.state.meta.errors.length > 0
+                            ? "border-destructive"
+                            : ""
+                        }
                       />
                       {field.state.meta.errors ? (
-                        <p className="text-xs text-destructive">{field.state.meta.errors.join(", ")}</p>
+                        <p className="text-xs text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
                       ) : null}
                     </div>
                   )}
@@ -126,7 +130,12 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                     <div className="grid gap-2">
                       <div className="flex items-center">
                         <Label htmlFor={field.name}>Mot de passe</Label>
-                        <Link href="password-reset" className="ml-auto text-sm underline-offset-4 hover:underline">Mot de passe oublié ?</Link>
+                        <Link
+                          href="password-reset"
+                          className="ml-auto text-sm underline-offset-4 hover:underline"
+                        >
+                          Mot de passe oublié ?
+                        </Link>
                       </div>
                       <Input
                         id={field.name}
@@ -135,10 +144,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        className={field.state.meta.errors.length > 0 ? "border-destructive" : ""}
+                        className={
+                          field.state.meta.errors.length > 0
+                            ? "border-destructive"
+                            : ""
+                        }
                       />
                       {field.state.meta.errors ? (
-                        <p className="text-xs text-destructive">{field.state.meta.errors.join(", ")}</p>
+                        <p className="text-xs text-destructive">
+                          {field.state.meta.errors.join(", ")}
+                        </p>
                       ) : null}
                     </div>
                   )}
@@ -147,8 +162,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
                 <form.Subscribe
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                   children={([canSubmit, isSubmitting]) => (
-                    <Button type="submit" className="w-full" disabled={!canSubmit || loading || isSubmitting}>
-                      {loading || isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Se connecter"}
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={!canSubmit || loading || isSubmitting}
+                    >
+                      {loading || isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        "Se connecter"
+                      )}
                     </Button>
                   )}
                 />
@@ -164,5 +187,5 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
