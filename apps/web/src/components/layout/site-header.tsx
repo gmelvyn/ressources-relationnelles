@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { BookOpenCheck, LayoutDashboard, ShieldCheck, UserRound } from "lucide-react";
+import {
+  BookOpenCheck,
+  LayoutDashboard,
+  LogOutIcon,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { canModerate } from "@/lib/permissions";
@@ -28,11 +34,6 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <Button asChild variant="ghost">
             <Link href="/help">Aide</Link>
           </Button>
-          {user && (
-            <Button asChild variant="ghost">
-              <Link href="/dashboard">Parcours</Link>
-            </Button>
-          )}
           {user && canModerate(user.role) && (
             <Button asChild variant="ghost">
               <Link href="/admin">Administration</Link>
@@ -44,14 +45,23 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <ThemeToggle />
           {user ? (
             <>
-              <Button asChild variant="outline" className="hidden sm:inline-flex">
+              <Button
+                asChild
+                variant="outline"
+                className="hidden sm:inline-flex"
+              >
                 <Link href="/dashboard">
                   <LayoutDashboard className="size-4" />
                   Tableau de bord
                 </Link>
               </Button>
               {canModerate(user.role) && (
-                <Button asChild variant="outline" size="icon" aria-label="Administration">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="icon"
+                  aria-label="Administration"
+                >
                   <Link href="/admin">
                     <ShieldCheck className="size-4" />
                   </Link>
@@ -60,6 +70,16 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <Button asChild size="icon" aria-label="Profil">
                 <Link href="/portal/profile">
                   <UserRound className="size-4" />
+                </Link>
+              </Button>
+              <Button
+                variant="link"
+                color="red"
+                size="icon"
+                aria-label="Déconnexion"
+              >
+                <Link href="/login">
+                  <LogOutIcon color="red" />
                 </Link>
               </Button>
             </>

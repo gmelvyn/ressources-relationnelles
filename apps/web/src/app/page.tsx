@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpenCheck, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpenCheck,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResourceCard } from "@/components/resources/resource-card";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -30,8 +36,9 @@ export default async function Home() {
               (RE)Sources Relationnelles
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-white/85 sm:text-lg">
-              Un catalogue public et modéré pour créer, renforcer et enrichir les relations avec soi, ses proches,
-              ses collègues et ses communautés.
+              Un catalogue public et modéré pour créer, renforcer et enrichir
+              les relations avec soi, ses proches, ses collègues et ses
+              communautés.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -40,7 +47,12 @@ export default async function Home() {
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/70 bg-white/10 text-white hover:bg-white/20">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/70 bg-white/10 text-white hover:bg-white/20"
+              >
                 <Link href="/resources/new">Créer une ressource</Link>
               </Button>
             </div>
@@ -51,10 +63,26 @@ export default async function Home() {
       <section className="border-b bg-teal-950 text-white">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
           {[
-            { icon: BookOpenCheck, label: "Catalogue dynamique", value: "Catégories, relations, formats" },
-            { icon: UsersRound, label: "Echanges modérés", value: "Commentaires et réponses" },
-            { icon: BarChart3, label: "Progression", value: "Favoris, côté, exploité" },
-            { icon: ShieldCheck, label: "Back-office", value: "Validation, statistiques, RGPD" },
+            {
+              icon: BookOpenCheck,
+              label: "Catalogue dynamique",
+              value: "Catégories, relations, formats",
+            },
+            {
+              icon: UsersRound,
+              label: "Echanges modérés",
+              value: "Commentaires et réponses",
+            },
+            {
+              icon: BarChart3,
+              label: "Progression",
+              value: "Favoris, côté, exploité",
+            },
+            {
+              icon: ShieldCheck,
+              label: "Back-office",
+              value: "Validation, statistiques, RGPD",
+            },
           ].map((item) => (
             <div key={item.label} className="flex items-start gap-3">
               <item.icon className="mt-1 size-5 text-teal-200" />
@@ -70,8 +98,12 @@ export default async function Home() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">Ressources à découvrir</p>
-            <h2 className="mt-2 text-3xl font-semibold">Des supports concrets pour agir</h2>
+            <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">
+              Ressources à découvrir
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold">
+              Des supports concrets pour agir
+            </h2>
           </div>
           <Button asChild variant="outline">
             <Link href="/resources">Voir toutes les ressources</Link>
