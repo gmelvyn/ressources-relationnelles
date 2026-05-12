@@ -10,21 +10,18 @@ import { cn } from "@/lib/utils"
 import { AlertCircle, KeyRound, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const [error, setError] = useState<string | null>(null);
-  const [verifyEmailMessage, setVerifyEmailMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams.get('verifyEmail') === 'true') {
-      setVerifyEmailMessage("Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email.");
-    }
-  }, [searchParams]);
+  const verifyEmailMessage =
+    searchParams.get("verifyEmail") === "true"
+      ? "Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email."
+      : null;
 
   const form = useForm({
     defaultValues: {

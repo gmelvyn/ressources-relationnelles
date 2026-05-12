@@ -182,7 +182,7 @@ export function ResourceForm({ meta }: ResourceFormProps) {
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value as any)}
+                onChange={(e) => field.handleChange(e.target.value as ResourceVisibility)}
                 className="h-9 w-full rounded-md border bg-background px-3 text-sm"
               >
                 <option value="PUBLIC">Publique</option>

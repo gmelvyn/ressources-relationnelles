@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { createResourceComment } from "@/lib/resources";
+import { createResourceComment, getResourceComments } from "@/lib/resources";
+
+export async function GET(req: Request) {
+  const resourceId = new URL(req.url).searchParams.get("resourceId");
+
+  if (!resourceId) {
+    return NextResponse.json({ error: "ID ressource manquant" }, { status: 400 });
+  }
+
+  const comments = await getResourceComments(resourceId);
+
+  return NextResponse.json({ comments });
+}
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
