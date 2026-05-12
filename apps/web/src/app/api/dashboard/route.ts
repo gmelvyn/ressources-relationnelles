@@ -6,7 +6,7 @@ export async function GET() {
   const user = await getCurrentUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Non autorise" }, { status: 401 });
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
   const data = await getDashboardData(user.id);
