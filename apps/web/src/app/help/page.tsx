@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { Accessibility, DatabaseZap, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  Accessibility,
+  DatabaseZap,
+  LockKeyhole,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getCurrentUser } from "@/lib/session";
@@ -15,11 +20,18 @@ export default async function HelpPage() {
 
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">Aide</p>
-          <h1 className="mt-2 text-3xl font-semibold">Repères d'utilisation et de confiance</h1>
+          <p
+            className="text-sm font-semibold uppercase tracking-wide text-teal-700"
+            style={{ fontSize: 20, textAlign: "left", fontWeight: "bold" }}
+          >
+            Aide
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold">
+            Repères d'utilisation et de confiance
+          </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-            La plateforme distingue l'accès public, les fonctionnalités de compte citoyen et les espaces de
-            modération ou d'administration.
+            La plateforme distingue l'accès public, les fonctionnalités de
+            compte citoyen et les espaces de modération ou d'administration.
           </p>
         </div>
 
@@ -46,10 +58,15 @@ export default async function HelpPage() {
               text: "Les indicateurs portent sur la consultation, la recherche, les créations et l'exploitation des ressources.",
             },
           ].map((item) => (
-            <div key={item.title} className="rounded-lg border bg-card p-5 shadow-sm">
+            <div
+              key={item.title}
+              className="rounded-lg border bg-card p-5 shadow-sm"
+            >
               <item.icon className="size-5 text-teal-700" />
               <h2 className="mt-4 font-semibold">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {item.text}
+              </p>
             </div>
           ))}
         </section>

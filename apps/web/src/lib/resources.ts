@@ -103,7 +103,9 @@ async function uniqueSlug(title: string) {
   let slug = base;
   let index = 1;
 
-  while (await prisma.resource.findUnique({ where: { slug }, select: { id: true } })) {
+  while (
+    await prisma.resource.findUnique({ where: { slug }, select: { id: true } })
+  ) {
     index += 1;
     slug = `${base}-${index}`;
   }
@@ -124,13 +126,17 @@ export type CreateResourceInput = {
 };
 
 export class ResourceCatalogValidationError extends Error {
-  constructor(message = "La catégorie, le type ou la relation sélectionnée n'existe plus.") {
+  constructor(
+    message = "La catégorie, le type ou la relation sélectionnée n'existe plus.",
+  ) {
     super(message);
     this.name = "ResourceCatalogValidationError";
   }
 }
 
-async function validateResourceCatalog(input: Pick<CreateResourceInput, "categoryId" | "typeId" | "relationTypeIds">) {
+async function validateResourceCatalog(
+  input: Pick<CreateResourceInput, "categoryId" | "typeId" | "relationTypeIds">,
+) {
   const [category, type, relationTypes] = await Promise.all([
     prisma.resourceCategory.findFirst({
       where: { id: input.categoryId, isActive: true },
@@ -148,13 +154,24 @@ async function validateResourceCatalog(input: Pick<CreateResourceInput, "categor
 
   const uniqueRelationTypeIds = new Set(input.relationTypeIds);
 
-  if (!category || !type || relationTypes.length !== uniqueRelationTypeIds.size) {
+  if (
+    !category ||
+    !type ||
+    relationTypes.length !== uniqueRelationTypeIds.size
+  ) {
     throw new ResourceCatalogValidationError();
   }
 }
 
-export async function createResource(userId: string, userRole: string, input: CreateResourceInput) {
-  const status = canModerate(userRole) || input.visibility === "PRIVATE" ? "PUBLISHED" : "PENDING_REVIEW";
+export async function createResource(
+  userId: string,
+  userRole: string,
+  input: CreateResourceInput,
+) {
+  const status =
+    canModerate(userRole) || input.visibility === "PRIVATE"
+      ? "PUBLISHED"
+      : "PENDING_REVIEW";
   await validateResourceCatalog(input);
 
   return await prisma.resource.create({
@@ -185,7 +202,10 @@ export type UpdateProgressInput = {
   intent: string;
 };
 
-export async function updateResourceProgress(userId: string, input: UpdateProgressInput) {
+export async function updateResourceProgress(
+  userId: string,
+  input: UpdateProgressInput,
+) {
   const { resourceId, intent } = input;
   const now = new Date();
   const data =
@@ -201,9 +221,19 @@ export async function updateResourceProgress(userId: string, input: UpdateProgre
               ? { status: "IN_PROGRESS", startedAt: now }
               : intent === "complete"
                 ? { status: "COMPLETED", completedAt: now, exploitedAt: now }
-                : intent === "exploit"
-                  ? { status: "EXPLOITED", exploitedAt: now }
-                  : { status: "NOT_STARTED", completedAt: null, exploitedAt: null };
+                : intent === "uncomplete"
+                  ? {
+                      status: "NOT_STARTED",
+                      completedAt: null,
+                      exploitedAt: null,
+                    }
+                  : intent === "exploit"
+                    ? { status: "EXPLOITED", exploitedAt: now }
+                    : {
+                        status: "NOT_STARTED",
+                        completedAt: null,
+                        exploitedAt: null,
+                      };
 
   return await prisma.resourceProgress.upsert({
     where: {
@@ -227,7 +257,10 @@ export type CreateCommentInput = {
   content: string;
 };
 
-export async function createResourceComment(userId: string, input: CreateCommentInput) {
+export async function createResourceComment(
+  userId: string,
+  input: CreateCommentInput,
+) {
   return await prisma.resourceComment.create({
     data: {
       resourceId: input.resourceId,
@@ -240,16 +273,29 @@ export async function createResourceComment(userId: string, input: CreateComment
 
 function fixtureMeta(): CatalogMeta {
   return {
-    categories: categorySeeds.map((category) => ({ id: category.slug, ...category })),
-    relationTypes: relationTypeSeeds.map((relation) => ({ id: relation.slug, ...relation })),
-    resourceTypes: resourceTypeSeeds.map((type) => ({ id: type.slug, ...type })),
+    categories: categorySeeds.map((category) => ({
+      id: category.slug,
+      ...category,
+    })),
+    relationTypes: relationTypeSeeds.map((relation) => ({
+      id: relation.slug,
+      ...relation,
+    })),
+    resourceTypes: resourceTypeSeeds.map((type) => ({
+      id: type.slug,
+      ...type,
+    })),
   };
 }
 
 function fixtureResource(resource: FixtureResource): ResourceListItem {
   const meta = fixtureMeta();
-  const category = meta.categories.find((item) => item.slug === resource.categorySlug) ?? meta.categories[0];
-  const type = meta.resourceTypes.find((item) => item.slug === resource.typeSlug) ?? meta.resourceTypes[0];
+  const category =
+    meta.categories.find((item) => item.slug === resource.categorySlug) ??
+    meta.categories[0];
+  const type =
+    meta.resourceTypes.find((item) => item.slug === resource.typeSlug) ??
+    meta.resourceTypes[0];
 
   return {
     id: resource.slug,
@@ -269,26 +315,38 @@ function fixtureResource(resource: FixtureResource): ResourceListItem {
     category,
     type,
     relations: resource.relationSlugs
-      .map((slug) => meta.relationTypes.find((relation) => relation.slug === slug))
-      .filter((relation): relation is CatalogMeta["relationTypes"][number] => Boolean(relation)),
+      .map((slug) =>
+        meta.relationTypes.find((relation) => relation.slug === slug),
+      )
+      .filter((relation): relation is CatalogMeta["relationTypes"][number] =>
+        Boolean(relation),
+      ),
     author: null,
     commentsCount: 0,
     progress: null,
   };
 }
 
-function applyFixtureFilters(resources: ResourceListItem[], filters: ResourceFilters) {
+function applyFixtureFilters(
+  resources: ResourceListItem[],
+  filters: ResourceFilters,
+) {
   const search = filters.search?.trim().toLowerCase();
 
   return resources.filter((resource) => {
     if (search) {
-      const haystack = `${resource.title} ${resource.summary} ${resource.content}`.toLowerCase();
+      const haystack =
+        `${resource.title} ${resource.summary} ${resource.content}`.toLowerCase();
       if (!haystack.includes(search)) return false;
     }
 
-    if (filters.category && resource.category.slug !== filters.category) return false;
+    if (filters.category && resource.category.slug !== filters.category)
+      return false;
     if (filters.type && resource.type.slug !== filters.type) return false;
-    if (filters.relation && !resource.relations.some((relation) => relation.slug === filters.relation)) {
+    if (
+      filters.relation &&
+      !resource.relations.some((relation) => relation.slug === filters.relation)
+    ) {
       return false;
     }
 
@@ -296,7 +354,9 @@ function applyFixtureFilters(resources: ResourceListItem[], filters: ResourceFil
   });
 }
 
-function mapDbResource(resource: Awaited<ReturnType<typeof prisma.resource.findMany>>[number]): ResourceListItem {
+function mapDbResource(
+  resource: Awaited<ReturnType<typeof prisma.resource.findMany>>[number],
+): ResourceListItem {
   const record = resource as unknown as {
     id: string;
     title: string;
@@ -317,7 +377,12 @@ function mapDbResource(resource: Awaited<ReturnType<typeof prisma.resource.findM
     relations: Array<{ relationType: ResourceListItem["relations"][number] }>;
     author?: ResourceListItem["author"];
     comments: Array<{ id: string }>;
-    progress: Array<{ userId: string; status: string; isFavorite: boolean; isSaved: boolean }>;
+    progress: Array<{
+      userId: string;
+      status: string;
+      isFavorite: boolean;
+      isSaved: boolean;
+    }>;
   };
 
   return {
@@ -371,7 +436,10 @@ export async function getCatalogMeta(): Promise<CatalogMeta> {
       return { categories, relationTypes, resourceTypes };
     }
   } catch (error) {
-    console.error("Catalogue indisponible, utilisation des données de démonstration", error);
+    console.error(
+      "Catalogue indisponible, utilisation des données de démonstration",
+      error,
+    );
   }
 
   return fixtureMeta();
@@ -400,7 +468,10 @@ export async function getWritableCatalogMeta(): Promise<CatalogMeta | null> {
   return { categories, relationTypes, resourceTypes };
 }
 
-export async function getResources(filters: ResourceFilters = {}, userId?: string | null) {
+export async function getResources(
+  filters: ResourceFilters = {},
+  userId?: string | null,
+) {
   try {
     const visibility = userId ? ["PUBLIC", "RESTRICTED", "SHARED"] : ["PUBLIC"];
     const where = {
@@ -416,9 +487,24 @@ export async function getResources(filters: ResourceFilters = {}, userId?: strin
           ? [
               {
                 OR: [
-                  { title: { contains: filters.search, mode: "insensitive" as const } },
-                  { summary: { contains: filters.search, mode: "insensitive" as const } },
-                  { content: { contains: filters.search, mode: "insensitive" as const } },
+                  {
+                    title: {
+                      contains: filters.search,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    summary: {
+                      contains: filters.search,
+                      mode: "insensitive" as const,
+                    },
+                  },
+                  {
+                    content: {
+                      contains: filters.search,
+                      mode: "insensitive" as const,
+                    },
+                  },
                 ],
               },
             ]
@@ -454,7 +540,10 @@ export async function getResources(filters: ResourceFilters = {}, userId?: strin
 
     return resources.map(mapDbResource);
   } catch (error) {
-    console.error("Ressources indisponibles, utilisation des données de démonstration", error);
+    console.error(
+      "Ressources indisponibles, utilisation des données de démonstration",
+      error,
+    );
   }
 
   return applyFixtureFilters(resourceSeeds.map(fixtureResource), filters);
@@ -474,21 +563,28 @@ export async function getResourceBySlug(slug: string, userId?: string | null) {
 
     if (!resource) return null;
 
-    const canSeePrivate = userId && resource.authorId === userId;
+    const isAuthor = userId && resource.authorId === userId;
     const canSee =
-      resource.status === "PUBLISHED" &&
-      (resource.visibility === "PUBLIC" ||
-        (userId && ["RESTRICTED", "SHARED"].includes(resource.visibility)) ||
-        canSeePrivate);
+      isAuthor ||
+      (resource.status === "PUBLISHED" &&
+        (resource.visibility === "PUBLIC" ||
+          (userId && ["RESTRICTED", "SHARED"].includes(resource.visibility))));
 
     if (!canSee) return null;
 
     return mapDbResource(resource);
   } catch (error) {
-    console.error("Ressource indisponible, utilisation des données de démonstration", error);
+    console.error(
+      "Ressource indisponible, utilisation des données de démonstration",
+      error,
+    );
   }
 
-  return resourceSeeds.map(fixtureResource).find((resource) => resource.slug === slug) ?? null;
+  return (
+    resourceSeeds
+      .map(fixtureResource)
+      .find((resource) => resource.slug === slug) ?? null
+  );
 }
 
 export async function getResourceComments(resourceId: string) {

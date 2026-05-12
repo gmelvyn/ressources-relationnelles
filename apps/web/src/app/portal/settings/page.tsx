@@ -55,18 +55,6 @@ export default function SettingsPage() {
     },
   });
 
-  const notificationsForm = useForm({
-    defaultValues: {
-      emailNotifs: true,
-      pushNotifs: true,
-      marketingNotifs: false,
-    },
-    onSubmit: async ({ value }) => {
-      console.log("Saving notifications:", value);
-      // Implementation placeholder
-    },
-  });
-
   return (
     <div className="container mx-auto max-w-4xl py-6">
       <div className="mb-6 flex items-center space-x-4">
@@ -79,10 +67,9 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="profile">Profil</TabsTrigger>
           <TabsTrigger value="account">Compte</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
 
         {/* Profile Settings */}
@@ -240,117 +227,6 @@ export default function SettingsPage() {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         "Mettre à jour le compte"
-                      )}
-                    </Button>
-                  )}
-                />
-              </CardFooter>
-            </Card>
-          </form>
-        </TabsContent>
-
-        {/* Notification Settings */}
-        <TabsContent value="notifications" className="space-y-4 mt-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              notificationsForm.handleSubmit();
-            }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle>Préférences de notifications</CardTitle>
-                <CardDescription>
-                  Choisissez comment vous souhaitez être informé.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <notificationsForm.Field
-                  name="emailNotifs"
-                  children={(field) => (
-                    <div className="flex items-center justify-between space-x-2">
-                      <Label
-                        htmlFor={field.name}
-                        className="flex flex-col space-y-1"
-                      >
-                        <span>Notifications par email</span>
-                        <span className="font-normal text-xs text-muted-foreground">
-                          Recevoir un email pour les activités importantes.
-                        </span>
-                      </Label>
-                      <Switch
-                        id={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
-                      />
-                    </div>
-                  )}
-                />
-                <Separator />
-                <notificationsForm.Field
-                  name="pushNotifs"
-                  children={(field) => (
-                    <div className="flex items-center justify-between space-x-2">
-                      <Label
-                        htmlFor={field.name}
-                        className="flex flex-col space-y-1"
-                      >
-                        <span>Notifications push</span>
-                        <span className="font-normal text-xs text-muted-foreground">
-                          Recevoir des alertes sur votre appareil.
-                        </span>
-                      </Label>
-                      <Switch
-                        id={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
-                      />
-                    </div>
-                  )}
-                />
-                <Separator />
-                <notificationsForm.Field
-                  name="marketingNotifs"
-                  children={(field) => (
-                    <div className="flex items-center justify-between space-x-2">
-                      <Label
-                        htmlFor={field.name}
-                        className="flex flex-col space-y-1"
-                      >
-                        <span>Actualités de la plateforme</span>
-                        <span className="font-normal text-xs text-muted-foreground">
-                          Recevoir les dernières nouvelles et mises à jour.
-                        </span>
-                      </Label>
-                      <Switch
-                        id={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked)
-                        }
-                      />
-                    </div>
-                  )}
-                />
-              </CardContent>
-              <CardFooter>
-                <notificationsForm.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      disabled={!canSubmit || isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        "Enregistrer les préférences"
                       )}
                     </Button>
                   )}

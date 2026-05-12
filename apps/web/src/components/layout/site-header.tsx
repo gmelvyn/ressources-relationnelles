@@ -31,6 +31,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <Button asChild variant="ghost">
             <Link href="/resources">Catalogue</Link>
           </Button>
+
           <Button asChild variant="ghost">
             <Link href="/help">Aide</Link>
           </Button>
@@ -55,18 +56,6 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                   Tableau de bord
                 </Link>
               </Button>
-              {canModerate(user.role) && (
-                <Button
-                  asChild
-                  variant="outline"
-                  size="icon"
-                  aria-label="Administration"
-                >
-                  <Link href="/admin">
-                    <ShieldCheck className="size-4" />
-                  </Link>
-                </Button>
-              )}
               <Button asChild size="icon" aria-label="Profil">
                 <Link href="/portal/profile">
                   <UserRound className="size-4" />
