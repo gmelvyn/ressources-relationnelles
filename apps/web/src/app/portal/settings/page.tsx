@@ -18,6 +18,7 @@ import { authClient } from "@/lib/auth-client";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { data: session } = authClient.useSession();
@@ -26,12 +27,19 @@ export default function SettingsPage() {
 
   const profileForm = useForm({
     defaultValues: {
-      username: session?.user?.email || "",
-      bio: "",
+      username: session?.user?.name || "",
+      bio: (session?.user as { bio?: string })?.bio || "",
     },
     onSubmit: async ({ value }) => {
-      console.log("Saving profile:", value);
-      // Implementation placeholder
+      const { error } = await authClient.updateUser({
+        name: value.username,
+        bio: value.bio,
+      });
+      if (error) {
+        toast.error("Erreur lors de la sauvegarde");
+      } else {
+        toast.success("Profil mis à jour avec succès");
+      }
     },
   });
 
@@ -80,6 +88,7 @@ export default function SettingsPage() {
         {/* Profile Settings */}
         <TabsContent value="profile" className="space-y-4 mt-4">
           <form
+            key={`${session?.user?.name}-${(session?.user as { bio?: string })?.bio}`}
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -132,7 +141,11 @@ export default function SettingsPage() {
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                   children={([canSubmit, isSubmitting]) => (
                     <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer"}
+                      {isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        "Enregistrer"
+                      )}
                     </Button>
                   )}
                 />
@@ -223,7 +236,11 @@ export default function SettingsPage() {
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                   children={([canSubmit, isSubmitting]) => (
                     <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Mettre à jour le compte"}
+                      {isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        "Mettre à jour le compte"
+                      )}
                     </Button>
                   )}
                 />
@@ -253,7 +270,10 @@ export default function SettingsPage() {
                   name="emailNotifs"
                   children={(field) => (
                     <div className="flex items-center justify-between space-x-2">
-                      <Label htmlFor={field.name} className="flex flex-col space-y-1">
+                      <Label
+                        htmlFor={field.name}
+                        className="flex flex-col space-y-1"
+                      >
                         <span>Notifications par email</span>
                         <span className="font-normal text-xs text-muted-foreground">
                           Recevoir un email pour les activités importantes.
@@ -262,7 +282,9 @@ export default function SettingsPage() {
                       <Switch
                         id={field.name}
                         checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(checked)
+                        }
                       />
                     </div>
                   )}
@@ -272,7 +294,10 @@ export default function SettingsPage() {
                   name="pushNotifs"
                   children={(field) => (
                     <div className="flex items-center justify-between space-x-2">
-                      <Label htmlFor={field.name} className="flex flex-col space-y-1">
+                      <Label
+                        htmlFor={field.name}
+                        className="flex flex-col space-y-1"
+                      >
                         <span>Notifications push</span>
                         <span className="font-normal text-xs text-muted-foreground">
                           Recevoir des alertes sur votre appareil.
@@ -281,7 +306,9 @@ export default function SettingsPage() {
                       <Switch
                         id={field.name}
                         checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(checked)
+                        }
                       />
                     </div>
                   )}
@@ -291,7 +318,10 @@ export default function SettingsPage() {
                   name="marketingNotifs"
                   children={(field) => (
                     <div className="flex items-center justify-between space-x-2">
-                      <Label htmlFor={field.name} className="flex flex-col space-y-1">
+                      <Label
+                        htmlFor={field.name}
+                        className="flex flex-col space-y-1"
+                      >
                         <span>Actualités de la plateforme</span>
                         <span className="font-normal text-xs text-muted-foreground">
                           Recevoir les dernières nouvelles et mises à jour.
@@ -300,7 +330,9 @@ export default function SettingsPage() {
                       <Switch
                         id={field.name}
                         checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(checked)
+                        }
                       />
                     </div>
                   )}
@@ -310,8 +342,16 @@ export default function SettingsPage() {
                 <notificationsForm.Subscribe
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                   children={([canSubmit, isSubmitting]) => (
-                    <Button type="submit" variant="outline" disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enregistrer les préférences"}
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      disabled={!canSubmit || isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        "Enregistrer les préférences"
+                      )}
                     </Button>
                   )}
                 />

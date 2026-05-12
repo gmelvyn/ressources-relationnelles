@@ -28,5 +28,15 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins,
+  user: {
+    additionalFields: {
+      bio: {
+        type: "string",
+        required: false,
+        input: true,
+        fieldName: "bio",
+      },
+    },
+  },
   plugins: [admin(), expo()],
 });
