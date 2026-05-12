@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { canAdminUsers } from "@/lib/permissions";
 import { updateUserRole, toggleUserStatus } from "@/lib/admin";
+import { getAdminUsers } from "@/lib/resources";
+
+export async function GET() {
+  const user = await getCurrentUser();
+
+  if (!user || !canAdminUsers(user.role)) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+  }
+
+  const users = await getAdminUsers();
+
+  return NextResponse.json({ users });
+}
 
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();

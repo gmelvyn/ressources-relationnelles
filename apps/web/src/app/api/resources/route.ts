@@ -1,6 +1,32 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { ResourceCatalogValidationError, createResource } from "@/lib/resources";
+import {
+  ResourceCatalogValidationError,
+  createResource,
+  getCatalogMeta,
+  getResources,
+  type ResourceFilters,
+} from "@/lib/resources";
+
+function firstParam(value: string | null) {
+  return value?.trim() || undefined;
+}
+
+export async function GET(req: Request) {
+  const user = await getCurrentUser();
+  const params = new URL(req.url).searchParams;
+  const filters: ResourceFilters = {
+    search: firstParam(params.get("search")),
+    category: firstParam(params.get("category")),
+    relation: firstParam(params.get("relation")),
+    type: firstParam(params.get("type")),
+    status: firstParam(params.get("status")),
+  };
+
+  const [meta, resources] = await Promise.all([getCatalogMeta(), getResources(filters, user?.id)]);
+
+  return NextResponse.json({ meta, resources });
+}
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();

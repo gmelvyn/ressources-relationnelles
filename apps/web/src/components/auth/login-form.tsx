@@ -21,7 +21,6 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
-
   const verifyEmailMessage =
     searchParams.get("verifyEmail") === "true"
       ? "Veuillez vérifier votre email avant de vous connecter. Un lien de vérification a été envoyé à votre adresse email."
