@@ -20,6 +20,7 @@ model User {
   firstName     String?
   lastName      String?
   username      String?   @unique
+  bio           String?
 
   posts         Post[]
   resources     Resource[] @relation("ResourceAuthor")
