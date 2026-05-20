@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Clock, ExternalLink, MessageCircle, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +9,9 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { CommentForm } from "@/components/resources/comment-form";
 import { DeleteCommentButton } from "@/components/resources/delete-comment-button";
 import { ResourceProgressActions } from "@/components/resources/resource-progress-actions";
+import { ShareResourceButton } from "@/components/resources/share-resource-button";
 import { canModerate } from "@/lib/permissions";
-import { getResourceBySlug, getResourceComments } from "@/lib/resources";
+import { getResourceAccessBySlug, getResourceComments } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -27,10 +29,33 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function youtubeEmbedUrl(sourceUrl?: string | null) {
+  if (!sourceUrl) return null;
+
+  try {
+    const url = new URL(sourceUrl);
+    const videoId =
+      url.hostname.includes("youtube.com")
+        ? url.searchParams.get("v")
+        : url.hostname === "youtu.be"
+          ? url.pathname.slice(1)
+          : null;
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function ResourcePage({ params }: ResourcePageProps) {
   const { slug } = await params;
   const user = await getCurrentUser();
-  const resource = await getResourceBySlug(slug, user?.id);
+  const access = await getResourceAccessBySlug(slug, user?.id);
+  const resource = access.resource;
+
+  if (!resource && access.accessDenied) {
+    redirect(`/login?callbackUrl=/resources/${slug}`);
+  }
 
   if (!resource) {
     notFound();
@@ -38,6 +63,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
 
   const comments = await getResourceComments(resource.id);
   const canDeleteAnyComment = canModerate(user?.role);
+  const embedUrl = youtubeEmbedUrl(resource.sourceUrl);
 
   return (
     <main className="min-h-screen bg-background">
@@ -63,6 +89,29 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
 
             <h1 className="mt-5 text-4xl font-semibold leading-tight">{resource.title}</h1>
             <p className="mt-4 text-lg leading-8 text-muted-foreground">{resource.summary}</p>
+
+            {resource.imageUrl || embedUrl ? (
+              <div className="mt-8 overflow-hidden rounded-lg border bg-card shadow-sm">
+                {embedUrl ? (
+                  <iframe
+                    className="aspect-video w-full"
+                    src={embedUrl}
+                    title={resource.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : resource.imageUrl ? (
+                  <Image
+                    src={resource.imageUrl}
+                    alt={resource.title}
+                    width={1200}
+                    height={675}
+                    className="h-auto w-full object-cover"
+                    priority
+                  />
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="mt-6 flex flex-wrap gap-4 text-sm text-muted-foreground">
               {resource.durationMinutes ? (
@@ -164,6 +213,20 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                   resource={resource}
                   isAuthenticated={Boolean(user)}
                   redirectTo={`/resources/${resource.slug}`}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-5 shadow-sm">
+              <h2 className="font-semibold">Partager</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Copiez un lien direct vers cette ressource pour la transmettre.
+              </p>
+              <div className="mt-4">
+                <ShareResourceButton
+                  resourceId={resource.id}
+                  title={resource.title}
+                  url={`/resources/${resource.slug}`}
                 />
               </div>
             </div>

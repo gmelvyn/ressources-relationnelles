@@ -1,11 +1,9 @@
-import Link from "next/link";
 import {
   Accessibility,
   DatabaseZap,
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getCurrentUser } from "@/lib/session";
 

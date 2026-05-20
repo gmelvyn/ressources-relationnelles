@@ -1,7 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+async function refuseCookies(page: import("@playwright/test").Page) {
+  const button = page.getByRole("button", { name: "Refuser" });
+  if (await button.isVisible().catch(() => false)) {
+    await button.click();
+  }
+}
+
 test("filtre les ressources par catégorie Couple", async ({ page }) => {
   await page.goto("/resources");
+  await refuseCookies(page);
   await page.locator('select[name="category"]').selectOption("couple");
   await page.getByRole("button", { name: /filtrer/i }).click();
 
@@ -11,10 +19,10 @@ test("filtre les ressources par catégorie Couple", async ({ page }) => {
 });
 
 test("affiche les médias intégrés dans le détail d'une ressource", async ({ page }) => {
-  await page.goto("/resources/travail-salaire-profit");
+  await page.goto("/resources/travail-salaire-profit", { waitUntil: "domcontentloaded" });
   await expect(page.locator('iframe[src*="youtube.com/embed"]')).toBeVisible();
 
-  await page.goto("/resources/une-question-vraie-par-jour");
+  await page.goto("/resources/une-question-vraie-par-jour", { waitUntil: "domcontentloaded" });
   await expect(page.getByAltText("Une question vraie par jour")).toBeVisible();
 });
 
@@ -46,6 +54,7 @@ test("génère un partage depuis le détail d'une ressource", async ({ page }) =
   });
 
   await page.goto("/resources/une-question-vraie-par-jour");
+  await refuseCookies(page);
   await page.getByRole("button", { name: "Partager" }).click();
   await expect(page.getByText("Lien de partage généré.")).toBeVisible();
 });

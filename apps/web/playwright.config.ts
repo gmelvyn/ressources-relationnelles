@@ -11,8 +11,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command:
-      'RECETTE_USE_FIXTURES="1" DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/rrb" BETTER_AUTH_SECRET="test-secret-for-recette-0123456789abcdef" BETTER_AUTH_URL="http://127.0.0.1:3100" bun run dev -- --webpack --hostname 127.0.0.1 --port 3100',
+    command: "node ./tests/e2e/start-webserver.mjs",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: true,
     timeout: 120_000,
