@@ -2,8 +2,9 @@
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { updateUserRoleAction } from "@/app/actions/resource";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/api-client";
 import { roles } from "@/lib/permissions";
 
 type UserRoleFormProps = {
@@ -12,6 +13,7 @@ type UserRoleFormProps = {
 };
 
 export function UserRoleForm({ userId, currentRole }: UserRoleFormProps) {
+  const router = useRouter();
   const form = useForm({
     defaultValues: {
       role: currentRole,
@@ -22,10 +24,11 @@ export function UserRoleForm({ userId, currentRole }: UserRoleFormProps) {
       }),
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData();
-      formData.append("userId", userId);
-      formData.append("role", value.role);
-      await updateUserRoleAction(formData);
+      await apiRequest("/api/admin/users", {
+        method: "PATCH",
+        body: { userId, role: value.role },
+      });
+      router.refresh();
     },
   });
 

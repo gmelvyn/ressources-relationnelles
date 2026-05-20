@@ -7,6 +7,9 @@ import type {
   CatalogMeta,
   CurrentUser,
   DashboardPayload,
+  MyComment,
+  MyLike,
+  MyResource,
   ResourceComment,
   ResourceListItem,
 } from '@/lib/types';
@@ -86,6 +89,18 @@ export function getMe() {
   return apiFetch<ApiMe>('/api/me');
 }
 
+export function getMyResources() {
+  return apiFetch<MyResource[]>('/api/me/resources');
+}
+
+export function getMyComments() {
+  return apiFetch<MyComment[]>('/api/me/comments');
+}
+
+export function getMyLikes() {
+  return apiFetch<MyLike[]>('/api/me/likes');
+}
+
 export function getResources(filters: ResourceFilters = {}) {
   return apiFetch<{ meta: CatalogMeta; resources: ResourceListItem[] }>(
     `/api/resources${buildQuery(filters)}`,
@@ -154,6 +169,26 @@ export function createCategory(input: { name: string; description: string; color
 export function updateUser(input: { userId: string; role?: string; action?: string }) {
   return apiFetch('/api/admin/users', {
     method: 'PATCH',
+    body: input,
+  });
+}
+
+export function updateProfile(input: {
+  firstName?: string;
+  lastName?: string;
+  name: string;
+  username?: string;
+  bio?: string;
+}) {
+  return apiFetch('/api/me/profile', {
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteAccount(input: { confirmation: string }) {
+  return apiFetch('/api/me/profile', {
+    method: 'DELETE',
     body: input,
   });
 }

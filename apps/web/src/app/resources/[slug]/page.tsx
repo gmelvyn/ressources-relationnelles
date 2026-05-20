@@ -1,15 +1,15 @@
 import Link from "next/link";
-import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, ExternalLink, MessageCircle, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { CommentForm } from "@/components/resources/comment-form";
+import { DeleteCommentButton } from "@/components/resources/delete-comment-button";
 import { ResourceProgressActions } from "@/components/resources/resource-progress-actions";
-import { ShareResourceButton } from "@/components/resources/share-resource-button";
-import { getResourceAccessBySlug, getResourceComments } from "@/lib/resources";
+import { canModerate } from "@/lib/permissions";
+import { getResourceBySlug, getResourceComments } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -27,39 +27,17 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-function youtubeEmbedUrl(url?: string | null) {
-  if (!url) return null;
-
-  try {
-    const parsedUrl = new URL(url);
-    const videoId =
-      parsedUrl.hostname === "youtu.be"
-        ? parsedUrl.pathname.slice(1)
-        : parsedUrl.searchParams.get("v");
-
-    if (!videoId || !parsedUrl.hostname.includes("youtube")) return null;
-    return `https://www.youtube.com/embed/${videoId}`;
-  } catch {
-    return null;
-  }
-}
-
 export default async function ResourcePage({ params }: ResourcePageProps) {
   const { slug } = await params;
   const user = await getCurrentUser();
-  const access = await getResourceAccessBySlug(slug, user?.id);
-  const resource = access.resource;
-
-  if (!resource && access.accessDenied) {
-    redirect(`/login?callbackUrl=/resources/${slug}`);
-  }
+  const resource = await getResourceBySlug(slug, user?.id);
 
   if (!resource) {
     notFound();
   }
 
   const comments = await getResourceComments(resource.id);
-  const embedUrl = youtubeEmbedUrl(resource.sourceUrl);
+  const canDeleteAnyComment = canModerate(user?.role);
 
   return (
     <main className="min-h-screen bg-background">
@@ -104,29 +82,6 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
             </div>
 
             <div className="mt-8 rounded-lg border bg-card p-6 leading-8 shadow-sm">
-              {resource.imageUrl ? (
-                <div className="relative mb-6 aspect-video overflow-hidden rounded-md border bg-muted">
-                  <Image
-                    src={resource.imageUrl}
-                    alt={resource.title}
-                    fill
-                    sizes="(min-width: 1024px) 680px, 100vw"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              ) : null}
-              {embedUrl ? (
-                <div className="mb-6 aspect-video overflow-hidden rounded-md border bg-muted">
-                  <iframe
-                    src={embedUrl}
-                    title={resource.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-              ) : null}
               {resource.content.split("\n").map((paragraph, index) => (
                 <p key={`${resource.slug}-${index}`} className="mb-4 last:mb-0">
                   {paragraph}
@@ -158,18 +113,28 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                         <AvatarFallback>{initials(comment.author.name)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium">{comment.author.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(comment.createdAt)}
-                          </p>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">{comment.author.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(comment.createdAt)}
+                            </p>
+                          </div>
+                          {user && (comment.author.id === user.id || canDeleteAnyComment) ? (
+                            <DeleteCommentButton commentId={comment.id} slug={resource.slug} />
+                          ) : null}
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{comment.content}</p>
                         {comment.replies.length ? (
                           <div className="mt-4 space-y-3 border-l pl-4">
                             {comment.replies.map((reply) => (
                               <div key={reply.id}>
-                                <p className="text-sm font-medium">{reply.author.name}</p>
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <p className="text-sm font-medium">{reply.author.name}</p>
+                                  {user && (reply.author.id === user.id || canDeleteAnyComment) ? (
+                                    <DeleteCommentButton commentId={reply.id} slug={resource.slug} />
+                                  ) : null}
+                                </div>
                                 <p className="mt-1 text-sm leading-6 text-muted-foreground">{reply.content}</p>
                               </div>
                             ))}
@@ -199,20 +164,6 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                   resource={resource}
                   isAuthenticated={Boolean(user)}
                   redirectTo={`/resources/${resource.slug}`}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-lg border bg-card p-5 shadow-sm">
-              <h2 className="font-semibold">Partager</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Générez un lien de partage ou utilisez le canal proposé par votre navigateur.
-              </p>
-              <div className="mt-4">
-                <ShareResourceButton
-                  resourceId={resource.id}
-                  title={resource.title}
-                  url={`/resources/${resource.slug}`}
                 />
               </div>
             </div>

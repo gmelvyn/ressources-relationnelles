@@ -681,6 +681,7 @@ export async function getResourceComments(resourceId: string) {
       include: {
         author: {
           select: {
+            id: true,
             name: true,
             image: true,
             email: true,
@@ -691,6 +692,7 @@ export async function getResourceComments(resourceId: string) {
           include: {
             author: {
               select: {
+                id: true,
                 name: true,
                 image: true,
                 email: true,

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { createCommentAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/api-client";
 
 type CommentFormProps = {
   resourceId: string;
@@ -14,6 +16,8 @@ type CommentFormProps = {
 };
 
 export function CommentForm({ resourceId, slug, parentId, isAuthenticated }: CommentFormProps) {
+  const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
   const form = useForm({
     defaultValues: {
       content: "",
@@ -24,14 +28,23 @@ export function CommentForm({ resourceId, slug, parentId, isAuthenticated }: Com
       }),
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData();
-      formData.append("resourceId", resourceId);
-      formData.append("slug", slug);
-      formData.append("content", value.content);
-      if (parentId) formData.append("parentId", parentId);
-
-      await createCommentAction(formData);
-      form.reset();
+      setServerError(null);
+      try {
+        const comment = await apiRequest<{ id: string }>("/api/resources/comments", {
+          method: "POST",
+          body: {
+            resourceId,
+            slug,
+            content: value.content,
+            parentId,
+          },
+        });
+        form.reset();
+        router.replace(`/resources/${slug}?comment=${comment.id}#echanges`);
+        router.refresh();
+      } catch (error) {
+        setServerError(error instanceof Error ? error.message : "Impossible de publier le commentaire.");
+      }
     },
   });
 
@@ -52,6 +65,11 @@ export function CommentForm({ resourceId, slug, parentId, isAuthenticated }: Com
       }}
       className="space-y-3"
     >
+      {serverError ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {serverError}
+        </div>
+      ) : null}
       <form.Field
         name="content"
         children={(field) => (

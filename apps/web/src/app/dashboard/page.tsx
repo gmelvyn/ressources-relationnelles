@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookMarked, CheckCircle2, Heart, Plus, Send } from "lucide-react";
+import {
+  BookMarked,
+  CheckCircle2,
+  Heart,
+  Plus,
+  Send,
+  Settings,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResourceCard } from "@/components/resources/resource-card";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -36,12 +44,26 @@ export default async function DashboardPage() {
               Retrouvez vos favoris, ressources mises de côté, contenus exploités et contributions.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/resources/new">
-              <Plus className="size-4" />
-              Nouvelle ressource
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link href="/dashboard/profile">
+                <UserRound className="size-4" />
+                Profil
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/dashboard/settings">
+                <Settings className="size-4" />
+                Paramètres
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/resources/new">
+                <Plus className="size-4" />
+                Nouvelle ressource
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-3">

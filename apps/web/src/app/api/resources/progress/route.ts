@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
 import { updateResourceProgress } from "@/lib/resources";
 
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
     }
 
     const progress = await updateResourceProgress(user.id, { resourceId, intent });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return NextResponse.json(progress);
   } catch (error) {

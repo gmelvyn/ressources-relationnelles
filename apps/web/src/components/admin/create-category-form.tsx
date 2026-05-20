@@ -2,13 +2,15 @@
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { createCategoryAction } from "@/app/actions/resource";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/api-client";
 
 export function CreateCategoryForm() {
+  const router = useRouter();
   const form = useForm({
     defaultValues: {
       name: "",
@@ -23,12 +25,12 @@ export function CreateCategoryForm() {
       }),
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData();
-      formData.append("name", value.name);
-      formData.append("description", value.description);
-      formData.append("color", value.color);
-      await createCategoryAction(formData);
+      await apiRequest("/api/admin/categories", {
+        method: "POST",
+        body: value,
+      });
       form.reset();
+      router.refresh();
     },
   });
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
 import {
   ResourceCatalogValidationError,
@@ -47,6 +48,11 @@ export async function POST(req: Request) {
     }
 
     const resource = await createResource(user.id, user.role, body);
+
+    revalidatePath("/");
+    revalidatePath("/resources");
+    revalidatePath("/dashboard");
+    revalidatePath("/admin");
 
     return NextResponse.json(resource, { status: 201 });
   } catch (error) {

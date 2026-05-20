@@ -2,21 +2,24 @@
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { moderateResourceAction } from "@/app/actions/resource";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiRequest } from "@/lib/api-client";
 
 type ModerateResourceFormProps = {
   resourceId: string;
 };
 
 export function ModerateResourceForm({ resourceId }: ModerateResourceFormProps) {
+  const router = useRouter();
   const publishForm = useForm({
     onSubmit: async () => {
-      const formData = new FormData();
-      formData.append("resourceId", resourceId);
-      formData.append("action", "publish");
-      await moderateResourceAction(formData);
+      await apiRequest("/api/admin/moderate", {
+        method: "POST",
+        body: { resourceId, action: "publish" },
+      });
+      router.refresh();
     },
   });
 
@@ -30,11 +33,11 @@ export function ModerateResourceForm({ resourceId }: ModerateResourceFormProps) 
       }),
     },
     onSubmit: async ({ value }) => {
-      const formData = new FormData();
-      formData.append("resourceId", resourceId);
-      formData.append("action", "suspend");
-      formData.append("reason", value.reason);
-      await moderateResourceAction(formData);
+      await apiRequest("/api/admin/moderate", {
+        method: "POST",
+        body: { resourceId, action: "suspend", reason: value.reason },
+      });
+      router.refresh();
     },
   });
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
 import { canAdminUsers } from "@/lib/permissions";
 import { updateUserRole, toggleUserStatus } from "@/lib/admin";
@@ -42,6 +43,8 @@ export async function PATCH(req: Request) {
     } else {
       return NextResponse.json({ error: "Action ou rôle manquant" }, { status: 400 });
     }
+
+    revalidatePath("/admin");
 
     return NextResponse.json(result);
   } catch (error) {
