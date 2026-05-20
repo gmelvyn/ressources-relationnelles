@@ -65,3 +65,31 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/dashboard/settings");
   redirect("/dashboard/settings?updated=1");
 }
+
+export async function deleteAccountAction(formData: FormData) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const confirmation = formString(formData, "confirmation");
+
+  if (confirmation !== "SUPPRIMER") {
+    redirect("/dashboard/settings?error=delete-confirmation");
+  }
+
+  try {
+    await prisma.user.delete({
+      where: { id: user.id },
+    });
+  } catch (error) {
+    console.error("Erreur de suppression du compte", error);
+    redirect("/dashboard/settings?error=delete-account");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/resources");
+  revalidatePath("/dashboard");
+  redirect("/login?accountDeleted=1");
+}
