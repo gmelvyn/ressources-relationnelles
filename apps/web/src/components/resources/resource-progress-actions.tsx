@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, CheckCircle2, Heart, PlayCircle } from "lucide-react";
+import { Bookmark, CheckCircle2, Heart } from "lucide-react";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";

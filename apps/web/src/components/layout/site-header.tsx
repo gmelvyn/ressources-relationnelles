@@ -3,7 +3,6 @@ import {
   BookOpenCheck,
   LayoutDashboard,
   LogOutIcon,
-  ShieldCheck,
   UserRound,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,8 +22,10 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <span className="flex size-9 items-center justify-center rounded-lg bg-teal-700 text-white">
             <BookOpenCheck className="size-5" />
           </span>
-          <span className="hidden sm:inline">(RE)Sources Relationnelles</span>
-          <span className="sm:hidden">Ressources</span>
+          <span className="hidden font-display text-lg sm:inline">
+            (RE)Sources Relationnelles
+          </span>
+          <span className="font-display text-lg sm:hidden">Ressources</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -57,7 +58,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 </Link>
               </Button>
               <Button asChild size="icon" aria-label="Profil">
-                <Link href="/portal/profile">
+                <Link href="/dashboard/profile">
                   <UserRound className="size-4" />
                 </Link>
               </Button>

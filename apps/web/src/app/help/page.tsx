@@ -70,28 +70,6 @@ export default async function HelpPage() {
             </div>
           ))}
         </section>
-
-        <section className="mt-10 rounded-lg border bg-muted/30 p-6">
-          <h2 className="text-xl font-semibold">Rôles de la solution</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {[
-              "Citoyen non connecté : consultation des ressources publiques.",
-              "Citoyen connecté : favoris, progression, commentaires et création de ressources.",
-              "Modérateur : validation des ressources et modération des échanges.",
-              "Administrateur catalogue : gestion du référentiel et suivi statistique.",
-              "Super-administrateur : gestion globale des droits et de la solution.",
-            ].map((item) => (
-              <p key={item} className="text-sm leading-6 text-muted-foreground">
-                {item}
-              </p>
-            ))}
-          </div>
-          <div className="mt-6">
-            <Button asChild>
-              <Link href="/resources">Retour au catalogue</Link>
-            </Button>
-          </div>
-        </section>
       </div>
     </main>
   );
