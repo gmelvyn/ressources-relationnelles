@@ -72,7 +72,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               Connecté en tant que {roleLabel(user.role)}.
             </p>
           </div>
-          <Badge variant="outline">RGPD, modération et qualité</Badge>
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-4">
