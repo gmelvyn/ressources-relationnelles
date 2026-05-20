@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BarChart3, BookOpenCheck, Download, MessageSquare, Plus, ShieldAlert, UsersRound } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ResourceCard } from "@/components/resources/resource-card";
@@ -96,7 +95,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <h2 className="text-2xl font-semibold">Comptes et rôles</h2>
             </div>
             <div className="mt-5 overflow-x-auto rounded-lg border">
-              <div className="min-w-[760px]">
+              <div className="min-w-190">
               <div className="grid grid-cols-[1.4fr_1fr_1fr_auto] gap-3 bg-muted px-4 py-3 text-sm font-medium">
                 <span>Utilisateur</span>
                 <span>Rôle</span>
