@@ -7,13 +7,13 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 1. Install dependencies
 
    ```bash
-   npm install
+   bun install
    ```
 
 2. Start the app
 
    ```bash
-   npx expo start
+   bun run start
    ```
 
 In the output, you'll find options to open the app in a
@@ -47,6 +47,19 @@ To learn more about developing your project with Expo, look at the following res
 
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+
+## API locale
+
+L'app lit `EXPO_PUBLIC_API_URL` depuis `.env`. En developpement, `http://localhost:3000`
+est accepte: sur Android emulator il est mappe vers `http://10.0.2.2:3000`, et sur un
+telephone physique il est remplace par l'hote Expo detecte quand c'est possible.
+
+Si le backend Next.js tourne sur une autre machine ou si l'autodetection ne suffit pas,
+mettez directement l'adresse LAN du serveur:
+
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.1.25:3000
+```
 
 ## Join the community
 

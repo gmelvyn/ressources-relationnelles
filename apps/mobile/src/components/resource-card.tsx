@@ -12,7 +12,10 @@ import { useTheme } from '@/hooks/use-theme';
 export function ResourceCard({ resource }: { resource: ResourceListItem }) {
   const theme = useTheme();
   return (
-    <Pressable onPress={() => router.push(`/resources/${resource.slug}`)} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => router.push(`/resources/${resource.slug}`)}
+      style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}>
       <Card>
         <View style={styles.badges}>
           <Badge color={resource.category.color}>{resource.category.name}</Badge>
@@ -65,7 +68,7 @@ export function ResourceCard({ resource }: { resource: ResourceListItem }) {
           <View style={styles.statusIcons}>
             {resource.progress?.isFavorite ? <Heart size={16} color="#e11d48" fill="#e11d48" /> : null}
             {resource.progress?.isSaved ? <Bookmark size={16} color={theme.primary} fill={theme.primary} /> : null}
-            <Button variant="outline" onPress={() => router.push(`/resources/${resource.slug}`)}>
+            <Button variant="outline" onPress={() => router.push(`/resources/${resource.slug}`)} style={styles.openButton}>
               Ouvrir
             </Button>
           </View>
@@ -76,6 +79,9 @@ export function ResourceCard({ resource }: { resource: ResourceListItem }) {
 }
 
 const styles = StyleSheet.create({
+  pressable: {
+    width: '100%',
+  },
   badges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -101,11 +107,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Spacing.two,
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   meta: {
     flexDirection: 'row',
     gap: Spacing.two,
     flexWrap: 'wrap',
+    flex: 1,
   },
   metaItem: {
     flexDirection: 'row',
@@ -116,6 +124,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  openButton: {
+    minWidth: 92,
   },
   pressed: {
     opacity: 0.75,

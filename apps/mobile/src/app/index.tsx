@@ -100,7 +100,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   hero: {
-    minHeight: 520,
+    minHeight: 460,
     borderRadius: 8,
     overflow: 'hidden',
     justifyContent: 'flex-end',
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.58)',
+    backgroundColor: 'rgba(0,0,0,0.54)',
   },
   heroContent: {
     gap: Spacing.three,
-    padding: Spacing.four,
+    padding: Spacing.three,
   },
   heroEyebrow: {
     color: '#b7f7eb',
@@ -122,8 +122,8 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: '#ffffff',
-    fontSize: 42,
-    lineHeight: 46,
+    fontSize: 38,
+    lineHeight: 42,
   },
   heroText: {
     color: 'rgba(255,255,255,0.86)',

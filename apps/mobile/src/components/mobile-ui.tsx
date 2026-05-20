@@ -9,6 +9,8 @@ import {
   StyleSheet,
   TextInput,
   type TextInputProps,
+  type StyleProp,
+  type ViewStyle,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,18 +36,20 @@ const navItems: { href: Href; label: string; icon: LucideIcon }[] = [
 export function Screen({ children, tabs = false, scroll = true }: ScreenProps) {
   const theme = useTheme();
   const content = (
-    <SafeAreaView style={[styles.safeArea, { maxWidth: MaxContentWidth }]}>
+    <SafeAreaView style={[styles.safeArea, { maxWidth: MaxContentWidth, backgroundColor: theme.background }]}>
       <View style={[styles.content, tabs && styles.contentWithTabs]}>{children}</View>
     </SafeAreaView>
   );
 
   return (
-    <ThemedView style={styles.root}>
+    <ThemedView style={[styles.root, { backgroundColor: theme.background }]}>
       {scroll ? (
         <ScrollView
-          style={{ backgroundColor: theme.background }}
+          style={[styles.scroller, { backgroundColor: theme.background }]}
           contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled">
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
           {content}
         </ScrollView>
       ) : (
@@ -61,7 +65,15 @@ export function BottomNav() {
   const theme = useTheme();
 
   return (
-    <View style={[styles.nav, { backgroundColor: theme.card, borderColor: theme.border }]}>
+    <View
+      style={[
+        styles.nav,
+        {
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+          shadowColor: theme.text,
+        },
+      ]}>
       {navItems.map((item) => {
         const active =
           item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -74,6 +86,7 @@ export function BottomNav() {
             style={({ pressed }) => [
               styles.navItem,
               active && { backgroundColor: theme.backgroundSelected },
+              !active && pressed && { backgroundColor: theme.backgroundElement },
               pressed && styles.pressed,
             ]}>
             <Icon size={18} color={active ? theme.primary : theme.textSecondary} />
@@ -117,14 +130,27 @@ export function Header({
           </ThemedText>
         ) : null}
       </View>
-      {action ? <View>{action}</View> : null}
+      {action ? <View style={styles.headerAction}>{action}</View> : null}
     </View>
   );
 }
 
-export function Card({ children, style }: { children: ReactNode; style?: object }) {
+export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   const theme = useTheme();
-  return <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }, style]}>{children}</View>;
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+          shadowColor: theme.text,
+        },
+        style,
+      ]}>
+      {children}
+    </View>
+  );
 }
 
 export function Button({
@@ -140,7 +166,7 @@ export function Button({
   icon?: LucideIcon;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   disabled?: boolean;
-  style?: object;
+  style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
   const filled = variant === 'primary' || variant === 'danger';
@@ -163,6 +189,7 @@ export function Button({
       {Icon ? <Icon size={17} color={filled ? theme.primaryForeground : color} /> : null}
       <ThemedText
         type="smallBold"
+        numberOfLines={1}
         style={{
           color: filled ? theme.primaryForeground : variant === 'ghost' ? theme.text : color,
         }}>
@@ -300,6 +327,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
+  scroller: {
+    flex: 1,
+  },
   scrollContent: {
     alignItems: 'center',
     flexGrow: 1,
@@ -309,8 +339,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   content: {
-    gap: Spacing.four,
-    padding: Spacing.three,
+    gap: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingBottom: Spacing.three,
+    paddingTop: Spacing.two,
     width: '100%',
   },
   contentWithTabs: {
@@ -321,6 +353,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Spacing.three,
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
   },
   headerText: {
     flex: 1,
@@ -330,8 +363,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   title: {
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 34,
   },
   description: {
     marginTop: Spacing.one,
@@ -341,6 +374,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: Spacing.three,
     gap: Spacing.two,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    elevation: 2,
+  },
+  headerAction: {
+    alignSelf: 'stretch',
   },
   button: {
     minHeight: 44,
@@ -352,6 +392,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    flexShrink: 1,
   },
   disabled: {
     opacity: 0.5,
@@ -375,6 +416,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: Spacing.three,
     fontSize: 16,
+    lineHeight: 22,
   },
   textarea: {
     minHeight: 120,
@@ -410,16 +452,20 @@ const styles = StyleSheet.create({
     left: Spacing.three,
     right: Spacing.three,
     bottom: Spacing.three,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
     flexDirection: 'row',
     padding: Spacing.one,
     gap: Spacing.one,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.12,
+    shadowRadius: 22,
+    elevation: 8,
   },
   navItem: {
     flex: 1,
     minHeight: 58,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.one,
