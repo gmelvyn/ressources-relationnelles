@@ -64,7 +64,8 @@ export function SignUpForm({
       email: "",
       password: "",
       confirmPassword: "",
-      name: "",
+      firstName: "",
+      lastName: "",
     },
     validators: {
       onChange: z
@@ -72,7 +73,8 @@ export function SignUpForm({
           email: z.string().email("Email invalide"),
           password: passwordSchema,
           confirmPassword: z.string(),
-          name: z.string().min(1, "Le pseudonyme est requis"),
+          firstName: z.string().min(1, "Le prénom est requis"),
+          lastName: z.string().min(1, "Le nom est requis"),
         })
         .refine((data) => data.password === data.confirmPassword, {
           message: "Les mots de passe ne correspondent pas",
@@ -86,7 +88,9 @@ export function SignUpForm({
         const { error } = await authClient.signUp.email({
           email: value.email,
           password: value.password,
-          name: value.name,
+          name: `${value.firstName} ${value.lastName}`,
+          firstName: value.firstName,
+          lastName: value.lastName,
           callbackURL: "/dashboard",
           fetchOptions: {
             onSuccess: () => {
@@ -95,7 +99,7 @@ export function SignUpForm({
           },
         });
         if (error) {
-          setError("Une erreur est survenue lors de l'inscription");
+          setError("Cet email est déjà utilisé");
         }
       } finally {
         setLoading(false);
@@ -128,16 +132,17 @@ export function SignUpForm({
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+                <div className="grid gap-4 sm:grid-cols-2">
                 <form.Field
-                  name="name"
+                  name="firstName"
                   children={(field) => (
                     <div className="grid gap-2">
-                      <Label htmlFor={field.name}>Pseudonyme</Label>
+                      <Label htmlFor={field.name}>Prénom</Label>
                       <Input
                         id={field.name}
                         name={field.name}
                         type="text"
-                        placeholder="Votre pseudonyme"
+                        placeholder="Mathieu"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
@@ -162,6 +167,41 @@ export function SignUpForm({
                     </div>
                   )}
                 />
+                <form.Field
+                  name="lastName"
+                  children={(field) => (
+                    <div className="grid gap-2">
+                      <Label htmlFor={field.name}>Nom</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        placeholder="Dupont"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className={
+                          field.state.meta.isTouched &&
+                          field.state.meta.errors.length > 0
+                            ? "border-red-500"
+                            : ""
+                        }
+                      />
+                      {field.state.meta.isTouched &&
+                      field.state.meta.errors.length > 0 ? (
+                        <p className="text-xs text-red-500">
+                          {field.state.meta.errors
+                            .map((e) =>
+                              typeof e === "string" ? e : e?.message,
+                            )
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      ) : null}
+                    </div>
+                  )}
+                />
+                </div>
                 <form.Field
                   name="email"
                   children={(field) => (
