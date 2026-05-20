@@ -72,6 +72,11 @@ export type ResourceFilters = {
   status?: string;
 };
 
+export type AdminStatsFilters = {
+  period?: "all" | "current-month" | "last-month";
+  category?: string;
+};
+
 const includeResource = {
   category: true,
   type: true,
@@ -97,6 +102,8 @@ const includeResource = {
   },
   progress: true,
 };
+
+const useFixtureCatalog = process.env.RECETTE_USE_FIXTURES === "1";
 
 async function uniqueSlug(title: string) {
   const base = slugify(title) || "ressource";
@@ -124,6 +131,21 @@ export type CreateResourceInput = {
   durationMinutes?: number;
   relationTypeIds: string[];
 };
+
+function canSeeResource(resource: {
+  authorId?: string | null;
+  status: string;
+  visibility: string;
+}, userId?: string | null) {
+  const isAuthor = Boolean(userId && resource.authorId === userId);
+
+  return (
+    isAuthor ||
+    (resource.status === "PUBLISHED" &&
+      (resource.visibility === "PUBLIC" ||
+        Boolean(userId && ["RESTRICTED", "SHARED"].includes(resource.visibility))))
+  );
+}
 
 export class ResourceCatalogValidationError extends Error {
   constructor(
@@ -267,6 +289,7 @@ export async function createResourceComment(
       authorId: userId,
       parentId: input.parentId || null,
       content: input.content,
+      status: "PENDING_REVIEW",
     },
   });
 }
@@ -304,11 +327,11 @@ function fixtureResource(resource: FixtureResource): ResourceListItem {
     summary: resource.summary,
     content: resource.content,
     sourceUrl: resource.sourceUrl,
-    imageUrl: null,
+    imageUrl: resource.imageUrl ?? null,
     durationMinutes: resource.durationMinutes,
     difficulty: resource.difficulty,
-    visibility: "PUBLIC",
-    status: "PUBLISHED",
+    visibility: resource.visibility ?? "PUBLIC",
+    status: resource.status ?? "PUBLISHED",
     viewCount: 0,
     shareCount: 0,
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -416,6 +439,10 @@ function mapDbResource(
 }
 
 export async function getCatalogMeta(): Promise<CatalogMeta> {
+  if (useFixtureCatalog) {
+    return fixtureMeta();
+  }
+
   try {
     const [categories, relationTypes, resourceTypes] = await Promise.all([
       prisma.resourceCategory.findMany({
@@ -446,6 +473,10 @@ export async function getCatalogMeta(): Promise<CatalogMeta> {
 }
 
 export async function getWritableCatalogMeta(): Promise<CatalogMeta | null> {
+  if (useFixtureCatalog) {
+    return null;
+  }
+
   const [categories, relationTypes, resourceTypes] = await Promise.all([
     prisma.resourceCategory.findMany({
       where: { isActive: true },
@@ -472,6 +503,12 @@ export async function getResources(
   filters: ResourceFilters = {},
   userId?: string | null,
 ) {
+  if (useFixtureCatalog) {
+    return applyFixtureFilters(resourceSeeds.map(fixtureResource), filters).filter(
+      (resource) => canSeeResource(resource, userId),
+    );
+  }
+
   try {
     const visibility = userId ? ["PUBLIC", "RESTRICTED", "SHARED"] : ["PUBLIC"];
     const where = {
@@ -538,6 +575,13 @@ export async function getResources(
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
     });
 
+    if (filters.search && resources.length) {
+      await prisma.resource.updateMany({
+        where: { id: { in: resources.map((resource) => resource.id) } },
+        data: { searchCount: { increment: 1 } },
+      });
+    }
+
     return resources.map(mapDbResource);
   } catch (error) {
     console.error(
@@ -546,10 +590,34 @@ export async function getResources(
     );
   }
 
-  return applyFixtureFilters(resourceSeeds.map(fixtureResource), filters);
+  return applyFixtureFilters(resourceSeeds.map(fixtureResource), filters).filter(
+    (resource) => canSeeResource(resource, userId),
+  );
 }
 
 export async function getResourceBySlug(slug: string, userId?: string | null) {
+  const access = await getResourceAccessBySlug(slug, userId);
+  return access.resource;
+}
+
+export async function getResourceAccessBySlug(
+  slug: string,
+  userId?: string | null,
+): Promise<{ resource: ResourceListItem | null; accessDenied: boolean }> {
+  if (useFixtureCatalog) {
+    const fixture =
+      resourceSeeds
+        .map(fixtureResource)
+        .find((resource) => resource.slug === slug) ?? null;
+
+    if (!fixture) return { resource: null, accessDenied: false };
+    if (!canSeeResource(fixture, userId)) {
+      return { resource: null, accessDenied: true };
+    }
+
+    return { resource: fixture, accessDenied: false };
+  }
+
   try {
     const resource = await prisma.resource.findUnique({
       where: { slug },
@@ -561,18 +629,24 @@ export async function getResourceBySlug(slug: string, userId?: string | null) {
       },
     });
 
-    if (!resource) return null;
+    if (!resource) return { resource: null, accessDenied: false };
 
-    const isAuthor = userId && resource.authorId === userId;
-    const canSee =
-      isAuthor ||
-      (resource.status === "PUBLISHED" &&
-        (resource.visibility === "PUBLIC" ||
-          (userId && ["RESTRICTED", "SHARED"].includes(resource.visibility))));
+    if (!canSeeResource(resource, userId)) {
+      return { resource: null, accessDenied: true };
+    }
 
-    if (!canSee) return null;
+    const updatedResource = await prisma.resource.update({
+      where: { id: resource.id },
+      data: { viewCount: { increment: 1 } },
+      include: {
+        ...includeResource,
+        progress: {
+          where: userId ? { userId } : { userId: "__anonymous__" },
+        },
+      },
+    });
 
-    return mapDbResource(resource);
+    return { resource: mapDbResource(updatedResource), accessDenied: false };
   } catch (error) {
     console.error(
       "Ressource indisponible, utilisation des données de démonstration",
@@ -580,14 +654,23 @@ export async function getResourceBySlug(slug: string, userId?: string | null) {
     );
   }
 
-  return (
-    resourceSeeds
-      .map(fixtureResource)
-      .find((resource) => resource.slug === slug) ?? null
-  );
+  const fixture =
+    resourceSeeds.map(fixtureResource).find((resource) => resource.slug === slug) ??
+    null;
+
+  if (!fixture) return { resource: null, accessDenied: false };
+  if (!canSeeResource(fixture, userId)) {
+    return { resource: null, accessDenied: true };
+  }
+
+  return { resource: fixture, accessDenied: false };
 }
 
 export async function getResourceComments(resourceId: string) {
+  if (useFixtureCatalog) {
+    return [];
+  }
+
   try {
     return await prisma.resourceComment.findMany({
       where: {
@@ -672,6 +755,20 @@ export async function getDashboardData(userId: string) {
 }
 
 export async function getAdminOverview() {
+  if (useFixtureCatalog) {
+    const fixtures = resourceSeeds.map(fixtureResource);
+
+    return {
+      counters: {
+        resources: fixtures.length,
+        users: 0,
+        comments: 0,
+        pendingResources: 0,
+      },
+      topResources: fixtures.slice(0, 6),
+    };
+  }
+
   try {
     const [resources, users, comments, pendingResources] = await Promise.all([
       prisma.resource.count(),
@@ -712,7 +809,152 @@ export async function getAdminOverview() {
   }
 }
 
+export async function shareResource(resourceId: string) {
+  if (useFixtureCatalog) {
+    return { id: resourceId, shareCount: 1 };
+  }
+
+  return await prisma.resource.update({
+    where: { id: resourceId },
+    data: { shareCount: { increment: 1 } },
+    select: { id: true, shareCount: true },
+  });
+}
+
+export async function getPendingComments() {
+  if (useFixtureCatalog) {
+    return [];
+  }
+
+  try {
+    return await prisma.resourceComment.findMany({
+      where: { status: "PENDING_REVIEW" },
+      include: {
+        resource: { select: { id: true, title: true, slug: true } },
+        author: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "asc" },
+      take: 30,
+    });
+  } catch (error) {
+    console.error("Commentaires en modération indisponibles", error);
+    return [];
+  }
+}
+
+function getStatsDateFilter(period: AdminStatsFilters["period"]) {
+  const normalized = period ?? "all";
+  const now = new Date();
+
+  if (normalized === "current-month") {
+    return {
+      gte: new Date(now.getFullYear(), now.getMonth(), 1),
+      lt: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+    };
+  }
+
+  if (normalized === "last-month") {
+    return {
+      gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+      lt: new Date(now.getFullYear(), now.getMonth(), 1),
+    };
+  }
+
+  return null;
+}
+
+export async function getAdminStats(filters: AdminStatsFilters = {}) {
+  if (useFixtureCatalog) {
+    const resources = applyFixtureFilters(resourceSeeds.map(fixtureResource), {
+      category: filters.category,
+    });
+
+    return {
+      counters: {
+        consultations: resources.reduce((total, resource) => total + resource.viewCount, 0),
+        searches: 0,
+        creations: resources.length,
+        shares: resources.reduce((total, resource) => total + resource.shareCount, 0),
+        comments: 0,
+      },
+      topResources: resources.slice(0, 6),
+    };
+  }
+
+  const createdAt = getStatsDateFilter(filters.period);
+  const where = {
+    ...(createdAt ? { createdAt } : {}),
+    ...(filters.category ? { category: { slug: filters.category } } : {}),
+  };
+
+  try {
+    const [summary, createdResources, comments, topResources] = await Promise.all([
+      prisma.resource.aggregate({
+        where,
+        _sum: {
+          viewCount: true,
+          searchCount: true,
+          shareCount: true,
+        },
+      }),
+      prisma.resource.count({ where }),
+      prisma.resourceComment.count({
+        where: {
+          ...(createdAt ? { createdAt } : {}),
+          ...(filters.category
+            ? { resource: { category: { slug: filters.category } } }
+            : {}),
+        },
+      }),
+      prisma.resource.findMany({
+        where,
+        take: 6,
+        include: {
+          category: true,
+          type: true,
+          relations: { include: { relationType: true } },
+          comments: { where: { status: "VISIBLE" }, select: { id: true } },
+          author: { select: { id: true, name: true, email: true } },
+          progress: { where: { userId: "__admin__" } },
+        },
+        orderBy: [{ viewCount: "desc" }, { createdAt: "desc" }],
+      }),
+    ]);
+
+    return {
+      counters: {
+        consultations: summary._sum.viewCount ?? 0,
+        searches: summary._sum.searchCount ?? 0,
+        creations: createdResources,
+        shares: summary._sum.shareCount ?? 0,
+        comments,
+      },
+      topResources: topResources.map(mapDbResource),
+    };
+  } catch (error) {
+    console.error("Statistiques indisponibles", error);
+    const resources = applyFixtureFilters(resourceSeeds.map(fixtureResource), {
+      category: filters.category,
+    });
+
+    return {
+      counters: {
+        consultations: resources.reduce((total, resource) => total + resource.viewCount, 0),
+        searches: 0,
+        creations: resources.length,
+        shares: resources.reduce((total, resource) => total + resource.shareCount, 0),
+        comments: 0,
+      },
+      topResources: resources.slice(0, 6),
+    };
+  }
+}
+
 export async function getAdminUsers() {
+  if (useFixtureCatalog) {
+    return [];
+  }
+
   try {
     return await prisma.user.findMany({
       select: {

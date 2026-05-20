@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import Image from "next/image";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, Clock, ExternalLink, MessageCircle, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { CommentForm } from "@/components/resources/comment-form";
 import { ResourceProgressActions } from "@/components/resources/resource-progress-actions";
-import { getResourceBySlug, getResourceComments } from "@/lib/resources";
+import { ShareResourceButton } from "@/components/resources/share-resource-button";
+import { getResourceAccessBySlug, getResourceComments } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -25,16 +27,39 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function youtubeEmbedUrl(url?: string | null) {
+  if (!url) return null;
+
+  try {
+    const parsedUrl = new URL(url);
+    const videoId =
+      parsedUrl.hostname === "youtu.be"
+        ? parsedUrl.pathname.slice(1)
+        : parsedUrl.searchParams.get("v");
+
+    if (!videoId || !parsedUrl.hostname.includes("youtube")) return null;
+    return `https://www.youtube.com/embed/${videoId}`;
+  } catch {
+    return null;
+  }
+}
+
 export default async function ResourcePage({ params }: ResourcePageProps) {
   const { slug } = await params;
   const user = await getCurrentUser();
-  const resource = await getResourceBySlug(slug, user?.id);
+  const access = await getResourceAccessBySlug(slug, user?.id);
+  const resource = access.resource;
+
+  if (!resource && access.accessDenied) {
+    redirect(`/login?callbackUrl=/resources/${slug}`);
+  }
 
   if (!resource) {
     notFound();
   }
 
   const comments = await getResourceComments(resource.id);
+  const embedUrl = youtubeEmbedUrl(resource.sourceUrl);
 
   return (
     <main className="min-h-screen bg-background">
@@ -79,6 +104,29 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
             </div>
 
             <div className="mt-8 rounded-lg border bg-card p-6 leading-8 shadow-sm">
+              {resource.imageUrl ? (
+                <div className="relative mb-6 aspect-video overflow-hidden rounded-md border bg-muted">
+                  <Image
+                    src={resource.imageUrl}
+                    alt={resource.title}
+                    fill
+                    sizes="(min-width: 1024px) 680px, 100vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : null}
+              {embedUrl ? (
+                <div className="mb-6 aspect-video overflow-hidden rounded-md border bg-muted">
+                  <iframe
+                    src={embedUrl}
+                    title={resource.title}
+                    className="h-full w-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                </div>
+              ) : null}
               {resource.content.split("\n").map((paragraph, index) => (
                 <p key={`${resource.slug}-${index}`} className="mb-4 last:mb-0">
                   {paragraph}
@@ -151,6 +199,20 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                   resource={resource}
                   isAuthenticated={Boolean(user)}
                   redirectTo={`/resources/${resource.slug}`}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-5 shadow-sm">
+              <h2 className="font-semibold">Partager</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Générez un lien de partage ou utilisez le canal proposé par votre navigateur.
+              </p>
+              <div className="mt-4">
+                <ShareResourceButton
+                  resourceId={resource.id}
+                  title={resource.title}
+                  url={`/resources/${resource.slug}`}
                 />
               </div>
             </div>

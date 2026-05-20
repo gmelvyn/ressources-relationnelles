@@ -59,6 +59,56 @@ export async function createCategory(input: CreateCategoryInput) {
   });
 }
 
+export async function deleteResource(resourceId: string) {
+  return await prisma.resource.delete({
+    where: { id: resourceId },
+  });
+}
+
+export async function moderateComment(
+  commentId: string,
+  action: "publish" | "delete" | "hide",
+  moderatorId: string,
+) {
+  const comment = await prisma.resourceComment.findUniqueOrThrow({
+    where: { id: commentId },
+    select: { id: true, resourceId: true },
+  });
+
+  if (action === "delete") {
+    await prisma.resourceModeration.create({
+      data: {
+        targetType: "COMMENT",
+        targetId: comment.id,
+        resourceId: comment.resourceId,
+        moderatorId,
+        action,
+      },
+    });
+
+    return await prisma.resourceComment.delete({
+      where: { id: comment.id },
+    });
+  }
+
+  const status = action === "publish" ? "VISIBLE" : "HIDDEN";
+
+  await prisma.resourceModeration.create({
+    data: {
+      targetType: "COMMENT",
+      targetId: comment.id,
+      resourceId: comment.resourceId,
+      moderatorId,
+      action,
+    },
+  });
+
+  return await prisma.resourceComment.update({
+    where: { id: comment.id },
+    data: { status },
+  });
+}
+
 export async function updateUserRole(userId: string, role: string) {
   return await prisma.user.update({
     where: { id: userId },

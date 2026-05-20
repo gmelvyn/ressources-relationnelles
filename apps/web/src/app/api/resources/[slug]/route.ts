@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getResourceBySlug, getResourceComments } from "@/lib/resources";
+import { getResourceAccessBySlug, getResourceComments } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 type ResourceRouteProps = {
@@ -9,7 +9,12 @@ type ResourceRouteProps = {
 export async function GET(_req: Request, { params }: ResourceRouteProps) {
   const user = await getCurrentUser();
   const { slug } = await params;
-  const resource = await getResourceBySlug(slug, user?.id);
+  const access = await getResourceAccessBySlug(slug, user?.id);
+  const resource = access.resource;
+
+  if (!resource && access.accessDenied) {
+    return NextResponse.json({ error: "Connexion requise" }, { status: 401 });
+  }
 
   if (!resource) {
     return NextResponse.json({ error: "Ressource introuvable" }, { status: 404 });

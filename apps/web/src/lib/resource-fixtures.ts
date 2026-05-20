@@ -6,6 +6,24 @@ export const categorySeeds = [
     color: "#0f766e",
   },
   {
+    name: "Amis",
+    slug: "amis",
+    description: "Ressources pour entretenir les amitiés, les réseaux de soutien et les communautés.",
+    color: "#0891b2",
+  },
+  {
+    name: "Couple",
+    slug: "couple",
+    description: "Supports dédiés aux relations de couple, à l'écoute et aux rituels partagés.",
+    color: "#be123c",
+  },
+  {
+    name: "Famille",
+    slug: "famille",
+    description: "Repères pour les relations parents, enfants, fratries et proches familiaux.",
+    color: "#7c3aed",
+  },
+  {
     name: "Intelligence émotionnelle",
     slug: "intelligence-emotionnelle",
     description: "Ressources pour reconnaître, nommer et réguler les émotions.",
@@ -129,7 +147,23 @@ export const resourceTypeSeeds = [
   },
 ];
 
-export const resourceSeeds = [
+type ResourceSeed = {
+  title: string;
+  slug: string;
+  summary: string;
+  content: string;
+  categorySlug: string;
+  typeSlug: string;
+  relationSlugs: string[];
+  sourceUrl?: string;
+  imageUrl?: string;
+  visibility?: string;
+  status?: string;
+  durationMinutes: number;
+  difficulty: string;
+};
+
+export const resourceSeeds: ResourceSeed[] = [
   {
     title: "Reconnaître ses émotions",
     slug: "reconnaitre-ses-emotions",
@@ -190,11 +224,26 @@ export const resourceSeeds = [
       "Un rituel de sept jours pour enrichir une relation proche par des questions simples et ouvertes.",
     content:
       "Chaque jour, choisissez une question ouverte et prenez dix minutes pour écouter la réponse sans interrompre : de quoi as-tu besoin en ce moment ? qu'est-ce qui t'a donné de l'énergie aujourd'hui ? qu'aimerais-tu que je comprenne mieux ? Terminez par une reformulation et un remerciement.",
-    categorySlug: "vie-affective",
+    categorySlug: "couple",
     typeSlug: "activite-jeu",
     relationSlugs: ["conjoints", "famille", "amis-communautes"],
+    imageUrl: "/images/relations-hero.png",
     durationMinutes: 10,
     difficulty: "accessible",
+  },
+  {
+    title: "Carnet de dialogue du couple",
+    slug: "carnet-de-dialogue-du-couple",
+    summary:
+      "Une ressource réservée aux comptes connectés pour préparer un échange délicat en couple.",
+    content:
+      "Préparez l'échange en notant le sujet, ce que vous ressentez, ce que vous demandez et le compromis acceptable. La ressource est restreinte afin d'être utilisée dans un espace personnel connecté.",
+    categorySlug: "couple",
+    typeSlug: "fiche-lecture",
+    relationSlugs: ["conjoints"],
+    visibility: "RESTRICTED",
+    durationMinutes: 25,
+    difficulty: "intermediaire",
   },
   {
     title: "Cartographie de soutien",
@@ -203,7 +252,7 @@ export const resourceSeeds = [
       "Un exercice pour visualiser les personnes, lieux et services mobilisables en cas de besoin.",
     content:
       "Placez-vous au centre d'une feuille, puis ajoutez les proches, professionnels, lieux publics et ressources numériques qui peuvent vous soutenir. Identifiez les liens forts, les liens à renforcer et une action concrète à mener cette semaine pour entretenir ce réseau.",
-    categorySlug: "qualite-de-vie",
+    categorySlug: "amis",
     typeSlug: "exercice-atelier",
     relationSlugs: ["soi", "famille", "amis-communautes"],
     durationMinutes: 30,

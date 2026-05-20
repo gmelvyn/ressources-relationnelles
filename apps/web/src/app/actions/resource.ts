@@ -10,7 +10,14 @@ import {
   updateResourceProgress,
   createResourceComment,
 } from "@/lib/resources";
-import { moderateResource, createCategory, updateUserRole, toggleUserStatus } from "@/lib/admin";
+import {
+  createCategory,
+  deleteResource,
+  moderateComment,
+  moderateResource,
+  toggleUserStatus,
+  updateUserRole,
+} from "@/lib/admin";
 
 function formString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -157,6 +164,53 @@ export async function moderateResourceAction(formData: FormData) {
     revalidatePath("/resources");
   } catch (error) {
     console.error("Erreur de modération", error);
+  }
+
+  redirect("/admin");
+}
+
+export async function deleteResourceAction(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user || !canAdminCatalog(user.role)) {
+    redirect("/dashboard");
+  }
+
+  const resourceId = formString(formData, "resourceId");
+  if (!resourceId) {
+    redirect("/admin");
+  }
+
+  try {
+    await deleteResource(resourceId);
+    revalidatePath("/admin");
+    revalidatePath("/resources");
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("Erreur de suppression de ressource", error);
+  }
+
+  redirect("/admin");
+}
+
+export async function moderateCommentAction(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user || !canModerate(user.role)) {
+    redirect("/dashboard");
+  }
+
+  const commentId = formString(formData, "commentId");
+  const action = formString(formData, "action");
+
+  if (!commentId || !["publish", "delete", "hide"].includes(action)) {
+    redirect("/admin");
+  }
+
+  try {
+    await moderateComment(commentId, action as "publish" | "delete" | "hide", user.id);
+    revalidatePath("/admin");
+    revalidatePath("/resources");
+  } catch (error) {
+    console.error("Erreur de modération de commentaire", error);
   }
 
   redirect("/admin");
