@@ -3,6 +3,8 @@ export type CurrentUser = {
   name: string;
   email: string;
   image?: string | null;
+  username?: string | null;
+  bio?: string | null;
   role: string;
   emailVerified?: boolean;
 };
@@ -105,4 +107,32 @@ export type AdminPayload = {
     canAdminCatalog: boolean;
     canAdminUsers: boolean;
   };
+};
+
+export type MyResource = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  imageUrl?: string | null;
+  status: string;
+  visibility: string;
+  createdAt: string;
+  category: { name: string; color?: string };
+};
+
+export type MyComment = {
+  id: string;
+  content: string;
+  createdAt: string;
+  resource: { id: string; title: string; slug: string };
+};
+
+export type MyLike = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  imageUrl?: string | null;
+  createdAt: string;
 };

@@ -1,8 +1,9 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { toggleUserStatusAction } from "@/app/actions/resource";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/api-client";
 
 type UserStatusFormProps = {
   userId: string;
@@ -11,12 +12,14 @@ type UserStatusFormProps = {
 };
 
 export function UserStatusForm({ userId, isBanned, isDisabled }: UserStatusFormProps) {
+  const router = useRouter();
   const form = useForm({
     onSubmit: async () => {
-      const formData = new FormData();
-      formData.append("userId", userId);
-      formData.append("action", isBanned ? "unban" : "ban");
-      await toggleUserStatusAction(formData);
+      await apiRequest("/api/admin/users", {
+        method: "PATCH",
+        body: { userId, action: isBanned ? "unban" : "ban" },
+      });
+      router.refresh();
     },
   });
 

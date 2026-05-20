@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { CommentForm } from "@/components/resources/comment-form";
+import { DeleteCommentButton } from "@/components/resources/delete-comment-button";
 import { ResourceProgressActions } from "@/components/resources/resource-progress-actions";
+import { canModerate } from "@/lib/permissions";
 import { getResourceBySlug, getResourceComments } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
@@ -35,6 +37,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
   }
 
   const comments = await getResourceComments(resource.id);
+  const canDeleteAnyComment = canModerate(user?.role);
 
   return (
     <main className="min-h-screen bg-background">
@@ -110,18 +113,28 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
                         <AvatarFallback>{initials(comment.author.name)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium">{comment.author.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(comment.createdAt)}
-                          </p>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">{comment.author.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(comment.createdAt)}
+                            </p>
+                          </div>
+                          {user && (comment.author.id === user.id || canDeleteAnyComment) ? (
+                            <DeleteCommentButton commentId={comment.id} slug={resource.slug} />
+                          ) : null}
                         </div>
                         <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{comment.content}</p>
                         {comment.replies.length ? (
                           <div className="mt-4 space-y-3 border-l pl-4">
                             {comment.replies.map((reply) => (
                               <div key={reply.id}>
-                                <p className="text-sm font-medium">{reply.author.name}</p>
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <p className="text-sm font-medium">{reply.author.name}</p>
+                                  {user && (reply.author.id === user.id || canDeleteAnyComment) ? (
+                                    <DeleteCommentButton commentId={reply.id} slug={resource.slug} />
+                                  ) : null}
+                                </div>
                                 <p className="mt-1 text-sm leading-6 text-muted-foreground">{reply.content}</p>
                               </div>
                             ))}

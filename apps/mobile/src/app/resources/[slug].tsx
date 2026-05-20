@@ -35,6 +35,7 @@ export default function ResourceDetailScreen() {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [replyTo, setReplyTo] = useState<{ id: string; authorName: string } | null>(null);
 
   const load = useCallback(() => {
     if (!slug) return;
@@ -77,8 +78,13 @@ export default function ResourceDetailScreen() {
     }
     setBusy(true);
     try {
-      await createComment({ resourceId: resource.id, content: comment.trim() });
+      await createComment({
+        resourceId: resource.id,
+        content: comment.trim(),
+        parentId: replyTo?.id,
+      });
       setComment('');
+      setReplyTo(null);
       const payload = await getResource(resource.slug);
       setComments(payload.comments);
     } finally {
@@ -219,13 +225,23 @@ export default function ResourceDetailScreen() {
 
       {session?.user ? (
         <Card>
+          {replyTo ? (
+            <View style={styles.replyToHeader}>
+              <ThemedText type="smallBold" themeColor="primary">
+                En réponse à {replyTo.authorName}
+              </ThemedText>
+              <Button variant="ghost" onPress={() => setReplyTo(null)} style={styles.cancelReplyBtn}>
+                Annuler
+              </Button>
+            </View>
+          ) : null}
           <Field
-            label="Ajouter un commentaire"
+            label={replyTo ? "Ajouter une réponse" : "Ajouter un commentaire"}
             value={comment}
             onChangeText={setComment}
             multiline
             maxLength={1200}
-            placeholder="Votre commentaire"
+            placeholder="Votre message..."
           />
           <Button icon={Send} disabled={busy || comment.trim().length < 2} onPress={submitComment}>
             Publier
@@ -237,13 +253,23 @@ export default function ResourceDetailScreen() {
 
       {comments.length === 0 ? <EmptyState title="Aucun echange" /> : null}
       {comments.map((item) => (
-        <CommentCard key={item.id} comment={item} />
+        <CommentCard
+          key={item.id}
+          comment={item}
+          onReply={(id, authorName) => setReplyTo({ id, authorName })}
+        />
       ))}
     </Screen>
   );
 }
 
-function CommentCard({ comment }: { comment: ResourceComment }) {
+function CommentCard({
+  comment,
+  onReply,
+}: {
+  comment: ResourceComment;
+  onReply?: (id: string, authorName: string) => void;
+}) {
   return (
     <Card>
       <View>
@@ -255,6 +281,16 @@ function CommentCard({ comment }: { comment: ResourceComment }) {
       <ThemedText type="small" themeColor="textSecondary">
         {comment.content}
       </ThemedText>
+      {onReply && (
+        <Button
+          variant="ghost"
+          icon={MessageCircle}
+          onPress={() => onReply(comment.id, comment.author.name)}
+          style={styles.replyBtn}
+        >
+          Répondre
+        </Button>
+      )}
       {comment.replies?.map((reply) => (
         <View key={reply.id} style={styles.reply}>
           <ThemedText type="smallBold">{reply.author.name}</ThemedText>
@@ -303,5 +339,24 @@ const styles = StyleSheet.create({
     borderLeftColor: '#0f766e',
     paddingLeft: Spacing.two,
     gap: Spacing.one,
+    marginTop: Spacing.one,
+  },
+  replyToHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.one,
+  },
+  cancelReplyBtn: {
+    minHeight: 30,
+    paddingVertical: 0,
+    paddingHorizontal: Spacing.two,
+  },
+  replyBtn: {
+    alignSelf: 'flex-start',
+    minHeight: 30,
+    paddingVertical: 0,
+    paddingHorizontal: Spacing.two,
+    marginTop: Spacing.one,
   },
 });

@@ -2,11 +2,11 @@
 
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { createResourceAction } from "@/app/actions/resource";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/api-client";
 import type { CatalogMeta } from "@/lib/resources";
 import { useState } from "react";
 
@@ -51,24 +51,30 @@ export function ResourceForm({ meta }: ResourceFormProps) {
       setServerError(null);
       setServerSuccess(null);
 
-      const formData = new FormData();
-      formData.append("title", value.title);
-      formData.append("summary", value.summary);
-      formData.append("content", value.content);
-      formData.append("categoryId", value.categoryId);
-      formData.append("typeId", value.typeId);
-      formData.append("visibility", value.visibility);
-      if (value.durationMinutes > 0) formData.append("durationMinutes", value.durationMinutes.toString());
-      if (value.sourceUrl) formData.append("sourceUrl", value.sourceUrl);
-      value.relationTypeIds.forEach((id) => formData.append("relationTypeIds", id));
+      try {
+        const resource = await apiRequest<{ status?: string }>("/api/resources", {
+          method: "POST",
+          body: {
+            title: value.title,
+            summary: value.summary,
+            content: value.content,
+            categoryId: value.categoryId,
+            typeId: value.typeId,
+            visibility: value.visibility,
+            durationMinutes: value.durationMinutes > 0 ? value.durationMinutes : undefined,
+            sourceUrl: value.sourceUrl || undefined,
+            relationTypeIds: value.relationTypeIds,
+          },
+        });
 
-      const result = await createResourceAction(formData);
-
-      if (result.error) {
-        setServerError(result.error);
-      } else if (result.success) {
-        setServerSuccess(result.success);
+        setServerSuccess(
+          resource.status === "PUBLISHED"
+            ? "Ressource publiée."
+            : "Ressource envoyée en modération avant publication.",
+        );
         form.reset();
+      } catch (error) {
+        setServerError(error instanceof Error ? error.message : "Impossible d'enregistrer la ressource.");
       }
     },
   });

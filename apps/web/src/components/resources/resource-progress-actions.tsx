@@ -2,9 +2,9 @@
 
 import { Bookmark, CheckCircle2, Heart } from "lucide-react";
 import type { ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { updateProgressAction } from "@/app/actions/resource";
+import { apiRequest } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import type { ResourceListItem } from "@/lib/resources";
 
@@ -29,11 +29,24 @@ function ProgressButton({
   variant?: "outline" | "default" | "secondary";
   className?: string;
 }) {
+  const router = useRouter();
+
+  async function submit() {
+    await apiRequest("/api/resources/progress", {
+      method: "POST",
+      body: { resourceId, intent },
+    });
+    router.refresh();
+    router.push(redirectTo);
+  }
+
   return (
-    <form action={updateProgressAction}>
-      <input type="hidden" name="resourceId" value={resourceId} />
-      <input type="hidden" name="intent" value={intent} />
-      <input type="hidden" name="redirectTo" value={redirectTo} />
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        submit();
+      }}
+    >
       <Button
         type="submit"
         variant={variant}

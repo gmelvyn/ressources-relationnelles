@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
 import { canAdminCatalog } from "@/lib/permissions";
 import { createCategory } from "@/lib/admin";
@@ -19,6 +20,9 @@ export async function POST(req: Request) {
     }
 
     const category = await createCategory(body);
+
+    revalidatePath("/admin");
+    revalidatePath("/resources");
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {

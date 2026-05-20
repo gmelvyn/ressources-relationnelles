@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
 import { canModerate } from "@/lib/permissions";
 import { moderateResource } from "@/lib/admin";
@@ -22,6 +23,9 @@ export async function POST(req: Request) {
       ...body,
       moderatorId: user.id,
     });
+
+    revalidatePath("/admin");
+    revalidatePath("/resources");
 
     return NextResponse.json(resource);
   } catch (error) {
