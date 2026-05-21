@@ -1,7 +1,7 @@
 {
   "name": "rrb",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "dev:web": "bun --cwd apps/web run dev",
     "build:web": "bun --cwd apps/web run build",
