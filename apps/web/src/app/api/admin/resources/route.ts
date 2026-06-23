@@ -1,13 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { deleteResource } from "@/lib/admin";
-import { canAdminCatalog } from "@/lib/permissions";
+import { canAdminCatalog, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getCurrentUser } from "@/lib/session";
 
 export async function DELETE(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canAdminCatalog(user.role)) {
+  if (!user || !canAdminCatalog(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 

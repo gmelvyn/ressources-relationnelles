@@ -12,6 +12,7 @@ export type CurrentUser = {
   bio?: string | null;
   role: string;
   emailVerified?: boolean;
+  twoFactorEnabled?: boolean;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -35,6 +36,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
         bio: true,
         role: true,
         emailVerified: true,
+        twoFactorEnabled: true,
       },
     });
 
@@ -55,5 +57,6 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     image: session.user.image,
     role: "citizen",
     emailVerified: session.user.emailVerified,
+    twoFactorEnabled: Boolean(session.user.twoFactorEnabled),
   };
 }

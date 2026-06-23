@@ -3,6 +3,7 @@
 import { Share2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/api-client";
 
 type ShareResourceButtonProps = {
   resourceId: string;
@@ -43,10 +44,9 @@ export function ShareResourceButton({ resourceId, title, url }: ShareResourceBut
 
       setStatus("shared");
 
-      fetch("/api/resources/share", {
+      apiRequest("/api/resources/share", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resourceId }),
+        body: { resourceId },
       }).catch(() => undefined);
     } catch {
       setStatus("idle");

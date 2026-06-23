@@ -20,6 +20,14 @@ export function canModerate(role?: string | null) {
   return normalized === roles.moderator || normalized === roles.catalogAdmin || normalized === roles.superAdmin;
 }
 
+export function isSensitiveRole(role?: string | null) {
+  return canModerate(role);
+}
+
+export function hasRequiredSensitiveAuth(role?: string | null, twoFactorEnabled?: boolean | null) {
+  return !isSensitiveRole(role) || Boolean(twoFactorEnabled);
+}
+
 export function canAdminCatalog(role?: string | null) {
   const normalized = normalizeRole(role);
   return normalized === roles.catalogAdmin || normalized === roles.superAdmin;

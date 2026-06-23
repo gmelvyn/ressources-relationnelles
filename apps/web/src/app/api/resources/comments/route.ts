@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { canModerate } from "@/lib/permissions";
+import { canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getCurrentUser } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import { createResourceComment, getResourceComments } from "@/lib/resources";
@@ -73,7 +73,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Commentaire introuvable" }, { status: 404 });
     }
 
-    if (comment.authorId !== user.id && !canModerate(user.role)) {
+    if (
+      comment.authorId !== user.id &&
+      (!canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled))
+    ) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 

@@ -1,13 +1,28 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { expo } from "@better-auth/expo";
-import { admin } from "better-auth/plugins";
+import { admin, twoFactor } from "better-auth/plugins";
 import prisma from "./prisma";
 
-const authBaseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
-const authSecret =
-  process.env.BETTER_AUTH_SECRET ??
-  "local-recette-build-secret-change-in-real-env-0123456789";
+const isProduction = process.env.NODE_ENV === "production";
+const authBaseURL =
+  process.env.BETTER_AUTH_URL ?? (isProduction ? undefined : "http://localhost:3000");
+const authSecret = process.env.BETTER_AUTH_SECRET;
+
+if (!authBaseURL) {
+  throw new Error("BETTER_AUTH_URL est requis en production.");
+}
+
+if (isProduction && !authBaseURL.startsWith("https://")) {
+  throw new Error("BETTER_AUTH_URL doit utiliser HTTPS en production.");
+}
+
+if (isProduction && (!authSecret || authSecret.length < 32)) {
+  throw new Error("BETTER_AUTH_SECRET doit contenir au moins 32 caractères en production.");
+}
+
+const sessionSecret =
+  authSecret ?? "local-recette-build-secret-change-in-real-env-0123456789";
 
 const trustedOrigins = [
   authBaseURL,
@@ -27,10 +42,18 @@ const trustedOrigins = [
 
 export const auth = betterAuth({
   baseURL: authBaseURL,
-  secret: authSecret,
+  secret: sessionSecret,
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  session: {
+    expiresIn: 60 * 30,
+    updateAge: 60 * 5,
+    freshAge: 60 * 10,
+    cookieCache: {
+      enabled: false,
+    },
+  },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       console.info(`Email de confirmation pour ${user.email}: ${url}`);
@@ -43,6 +66,28 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins,
+  advanced: {
+    useSecureCookies: isProduction,
+    disableCSRFCheck: false,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          await prisma.loginAudit.create({
+            data: {
+              userId: session.userId,
+              sessionId: session.id,
+              ipAddress: typeof session.ipAddress === "string" ? session.ipAddress : null,
+              userAgent: typeof session.userAgent === "string" ? session.userAgent : null,
+              event: "SIGN_IN",
+              success: true,
+            },
+          });
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       bio: {
@@ -65,5 +110,13 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [admin(), expo()],
+  plugins: [
+    admin(),
+    twoFactor({
+      issuer: "RRB",
+      twoFactorCookieMaxAge: 60 * 5,
+      trustDeviceMaxAge: 60 * 60 * 24 * 7,
+    }),
+    expo(),
+  ],
 });

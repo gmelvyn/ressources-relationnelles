@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { canModerate } from "@/lib/permissions";
+import { canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import type { CurrentUser } from "@/lib/session";
 
 type SiteHeaderProps = {
@@ -38,7 +38,15 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </Button>
           {user && canModerate(user.role) && (
             <Button asChild variant="ghost">
-              <Link href="/admin">Administration</Link>
+              <Link
+                href={
+                  hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)
+                    ? "/admin"
+                    : "/dashboard/settings?security=2fa-required"
+                }
+              >
+                Administration
+              </Link>
             </Button>
           )}
         </nav>

@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
-import { canAdminUsers } from "@/lib/permissions";
+import { canAdminUsers, hasRequiredSensitiveAuth, isSensitiveRole } from "@/lib/permissions";
 import { updateUserRole, toggleUserStatus } from "@/lib/admin";
 import { getAdminUsers } from "@/lib/resources";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   const user = await getCurrentUser();
 
-  if (!user || !canAdminUsers(user.role)) {
+  if (!user || !canAdminUsers(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
@@ -20,7 +21,7 @@ export async function GET() {
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canAdminUsers(user.role)) {
+  if (!user || !canAdminUsers(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
@@ -34,6 +35,20 @@ export async function PATCH(req: Request) {
 
     let result;
     if (role) {
+      if (isSensitiveRole(role)) {
+        const targetUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { twoFactorEnabled: true },
+        });
+
+        if (!targetUser?.twoFactorEnabled) {
+          return NextResponse.json(
+            { error: "La 2FA doit être activée avant d'attribuer un rôle sensible." },
+            { status: 400 },
+          );
+        }
+      }
+
       result = await updateUserRole(userId, role);
     } else if (action) {
       if (userId === user.id) {

@@ -10,9 +10,10 @@ import { roles } from "@/lib/permissions";
 type UserRoleFormProps = {
   userId: string;
   currentRole: string;
+  twoFactorEnabled: boolean;
 };
 
-export function UserRoleForm({ userId, currentRole }: UserRoleFormProps) {
+export function UserRoleForm({ userId, currentRole, twoFactorEnabled }: UserRoleFormProps) {
   const router = useRouter();
   const form = useForm({
     defaultValues: {
@@ -52,9 +53,15 @@ export function UserRoleForm({ userId, currentRole }: UserRoleFormProps) {
             className="h-9 w-full rounded-md border bg-background px-2"
           >
             <option value={roles.citizen}>Citoyen</option>
-            <option value={roles.moderator}>Modérateur</option>
-            <option value={roles.catalogAdmin}>Administrateur catalogue</option>
-            <option value={roles.superAdmin}>Super-administrateur</option>
+            <option value={roles.moderator} disabled={!twoFactorEnabled}>
+              Modérateur
+            </option>
+            <option value={roles.catalogAdmin} disabled={!twoFactorEnabled}>
+              Administrateur catalogue
+            </option>
+            <option value={roles.superAdmin} disabled={!twoFactorEnabled}>
+              Super-administrateur
+            </option>
           </select>
         )}
       />

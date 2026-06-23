@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/session";
-import { canModerate } from "@/lib/permissions";
+import { canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { moderateResource } from "@/lib/admin";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canModerate(user.role)) {
+  if (!user || !canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 

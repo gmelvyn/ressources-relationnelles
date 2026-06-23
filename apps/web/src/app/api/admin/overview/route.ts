@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { canAdminCatalog, canAdminUsers, canModerate } from "@/lib/permissions";
+import { canAdminCatalog, canAdminUsers, canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getAdminOverview, getAdminUsers, getResources } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET() {
   const user = await getCurrentUser();
 
-  if (!user || !canModerate(user.role)) {
+  if (!user || !canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorise" }, { status: 403 });
   }
 

@@ -1,13 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { moderateComment } from "@/lib/admin";
-import { canModerate } from "@/lib/permissions";
+import { canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getCurrentUser } from "@/lib/session";
 
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canModerate(user.role)) {
+  if (!user || !canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
@@ -34,7 +34,7 @@ export async function PATCH(req: Request) {
 export async function DELETE(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canModerate(user.role)) {
+  if (!user || !canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 

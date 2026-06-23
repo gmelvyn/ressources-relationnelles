@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { canAdminCatalog, canAdminUsers, canModerate } from "@/lib/permissions";
+import { canAdminCatalog, canAdminUsers, canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET() {
@@ -11,6 +11,7 @@ export async function GET() {
       canModerate: canModerate(user?.role),
       canAdminCatalog: canAdminCatalog(user?.role),
       canAdminUsers: canAdminUsers(user?.role),
+      hasRequiredSensitiveAuth: hasRequiredSensitiveAuth(user?.role, user?.twoFactorEnabled),
     },
   });
 }

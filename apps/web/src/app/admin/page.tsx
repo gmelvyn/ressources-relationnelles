@@ -4,7 +4,7 @@ import { BarChart3, BookOpenCheck, Download, MessageSquare, Plus, ShieldAlert, U
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ResourceCard } from "@/components/resources/resource-card";
-import { canAdminCatalog, canAdminUsers, canModerate, normalizeRole, roleLabel } from "@/lib/permissions";
+import { canAdminCatalog, canAdminUsers, canModerate, hasRequiredSensitiveAuth, normalizeRole, roleLabel } from "@/lib/permissions";
 import { getAdminOverview, getAdminStats, getAdminUsers, getCatalogMeta, getPendingComments, getResources, type AdminStatsFilters } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 import { UserRoleForm } from "@/components/admin/user-role-form";
@@ -39,6 +39,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   if (!canModerate(user.role)) {
     redirect("/dashboard");
+  }
+
+  if (!hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
+    redirect("/dashboard/settings?security=2fa-required");
   }
 
   const statsFilters: AdminStatsFilters = {
@@ -96,30 +100,36 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             </div>
             <div className="mt-5 overflow-x-auto rounded-lg border">
               <div className="min-w-190">
-              <div className="grid grid-cols-[1.4fr_1fr_1fr_auto] gap-3 bg-muted px-4 py-3 text-sm font-medium">
-                <span>Utilisateur</span>
-                <span>Rôle</span>
-                <span>Statut</span>
-                <span className="text-right">Action</span>
-              </div>
-              {users.map((managedUser) => (
-                <div
-                  key={managedUser.id}
-                  className="grid grid-cols-[1.4fr_1fr_1fr_auto] items-center gap-3 border-t px-4 py-3 text-sm"
-                >
-                  <div>
-                    <p className="font-medium">{managedUser.name}</p>
-                    <p className="text-xs text-muted-foreground">{managedUser.email}</p>
-                  </div>
-                  <UserRoleForm userId={managedUser.id} currentRole={normalizeRole(managedUser.role)} />
-                  <span>{managedUser.banned ? "Désactivé" : "Actif"}</span>
-                  <UserStatusForm
-                    userId={managedUser.id}
-                    isBanned={managedUser.banned ?? false}
-                    isDisabled={managedUser.id === user.id}
-                  />
+                <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr_auto] gap-3 bg-muted px-4 py-3 text-sm font-medium">
+                  <span>Utilisateur</span>
+                  <span>Rôle</span>
+                  <span>2FA</span>
+                  <span>Statut</span>
+                  <span className="text-right">Action</span>
                 </div>
-              ))}
+                {users.map((managedUser) => (
+                    <div
+                      key={managedUser.id}
+                      className="grid grid-cols-[1.4fr_1fr_1fr_1fr_auto] items-center gap-3 border-t px-4 py-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">{managedUser.name}</p>
+                        <p className="text-xs text-muted-foreground">{managedUser.email}</p>
+                      </div>
+                      <UserRoleForm
+                        userId={managedUser.id}
+                        currentRole={normalizeRole(managedUser.role)}
+                        twoFactorEnabled={managedUser.twoFactorEnabled}
+                      />
+                      <span>{managedUser.twoFactorEnabled ? "Active" : "Inactive"}</span>
+                      <span>{managedUser.banned ? "Désactivé" : "Actif"}</span>
+                      <UserStatusForm
+                        userId={managedUser.id}
+                        isBanned={managedUser.banned ?? false}
+                        isDisabled={managedUser.id === user.id}
+                      />
+                    </div>
+                  ))}
               </div>
             </div>
           </section>

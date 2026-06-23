@@ -13,6 +13,7 @@ model User {
   name          String
   email         String
   emailVerified Boolean   @default(false)
+  twoFactorEnabled Boolean @default(false)
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -32,6 +33,8 @@ model User {
   moderationEvents ResourceModeration[] @relation("ResourceModerator")
   sessions      Session[]
   accounts      Account[]
+  loginAudits   LoginAudit[]
+  twoFactors    TwoFactor[]
 
   role       String?
   banned     Boolean?  @default(false)
@@ -40,6 +43,22 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+model LoginAudit {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+  event     String   @default("SIGN_IN")
+  success   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("login_audit")
 }
 
 model Post {
@@ -326,4 +345,17 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model TwoFactor {
+  id          String  @id @default(cuid())
+  secret      String
+  backupCodes String
+  verified    Boolean @default(true)
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@index([userId])
+  @@map("twoFactor")
 }

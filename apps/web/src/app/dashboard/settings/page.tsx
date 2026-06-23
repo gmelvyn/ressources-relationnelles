@@ -37,6 +37,7 @@ export default async function DashboardSettingsPage() {
       lastName: true,
       username: true,
       bio: true,
+      twoFactorEnabled: true,
     },
   });
 

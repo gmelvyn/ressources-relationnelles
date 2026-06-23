@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { canModerate } from "@/lib/permissions";
+import { canModerate, hasRequiredSensitiveAuth } from "@/lib/permissions";
 import { getAdminStats, type AdminStatsFilters } from "@/lib/resources";
 import { getCurrentUser } from "@/lib/session";
 
@@ -15,7 +15,7 @@ function period(value: string | null): AdminStatsFilters["period"] {
 export async function GET(req: Request) {
   const user = await getCurrentUser();
 
-  if (!user || !canModerate(user.role)) {
+  if (!user || !canModerate(user.role) || !hasRequiredSensitiveAuth(user.role, user.twoFactorEnabled)) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
   }
 
