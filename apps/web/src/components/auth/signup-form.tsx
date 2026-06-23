@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { authClient } from "@/lib/auth-client";
+import { getCsrfToken } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -93,6 +94,9 @@ export function SignUpForm({
           lastName: value.lastName,
           callbackURL: "/dashboard",
           fetchOptions: {
+            headers: {
+              "x-csrf-token": await getCsrfToken(),
+            },
             onSuccess: () => {
               router.push("/dashboard");
             },
