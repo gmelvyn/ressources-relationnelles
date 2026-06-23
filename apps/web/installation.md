@@ -46,8 +46,8 @@ Renseignez les variables suivantes dans `.env` :
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rrb"
-BETTER_AUTH_SECRET="un-secret-long-et-aleatoire"
-BETTER_AUTH_URL="http://localhost:3000"
+BETTER_AUTH_SECRET="un-secret-long-et-aleatoire-d-au-moins-32-caracteres"
+BETTER_AUTH_URL="https://votre-domaine.example"
 ```
 
 Générez un secret Better Auth :
@@ -56,7 +56,9 @@ Générez un secret Better Auth :
 bun --eval "console.log(Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('hex'))"
 ```
 
-Copiez la valeur générée dans `BETTER_AUTH_SECRET`.
+Copiez la valeur générée dans `BETTER_AUTH_SECRET`. En production,
+`BETTER_AUTH_URL` doit impérativement commencer par `https://`; l'application
+refuse de démarrer avec une URL HTTP ou un secret trop court.
 
 ## 3. Préparer PostgreSQL
 

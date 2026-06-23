@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { getCsrfToken } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +49,11 @@ export function LoginForm({
           password: value.password,
           rememberMe: value.rememberMe,
           callbackURL: "/dashboard",
+          fetchOptions: {
+            headers: {
+              "x-csrf-token": await getCsrfToken(),
+            },
+          },
         });
         if (error) {
           if (error.code === "EMAIL_NOT_VERIFIED")
